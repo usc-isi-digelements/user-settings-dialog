@@ -1,0 +1,918 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../button-action/button-action.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/social-icons.html">
+<link rel="import" href="../lodash-import/lodash.html">
+<link rel="import" href="../moment-element/moment-with-locales-import.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../styled-dialog/styled-dialog.html">
+<link rel="import" href="../terms-display/terms-display.html">
+
+<!--
+A Polymer Element showing a button that opens a dialog with user settings.
+
+### Example
+```js
+demo.buildSearchStateFunction = function(state) {
+  return {
+    date: state.date || [],
+    list: state.list || []
+  };
+};
+
+demo.buildSearchTermsFunction = function(state) {
+  return {
+    'Start Date': state.date && state.date.length === 2 && state.date[0] ? [state.date[0]] : [],
+    'End Date': state.date && state.date.length === 2 && state.date[1] ? [state.date[1]] : [],
+    'List Data': state.list
+  };
+};
+
+demo.resetSearchDatesFunction = function(state, start, end) {
+  return {
+    date: (start || end) ? [start, end] : state.date,
+    list: state.list
+  };
+};
+
+demo.cases = [{
+  name: 'Case #1',
+  searches: [],
+  sendEmailAlert: false
+}, {
+  name: 'Case #2',
+  searches: [{
+    lastAutomatedRun: new Date('01-05-2017'),
+    lastViewedByUser: new Date('01-01-2017'),
+    notify: false,
+    uiState: '{\"list\": [\"item1\"]}'
+  }],
+  sendEmailAlert: false
+}, {
+  name: 'Case #3',
+  searches: [{
+    lastAutomatedRun: new Date('01-05-2017'),
+    lastViewedByUser: new Date('01-02-2017'),
+    notify: true,
+    uiState: '{\"list\": [\"item1\", \"item2\"]}'
+  }],
+  sendEmailAlert: true
+}, {
+  name: 'Case #4',
+  searches: [{
+    lastAutomatedRun: new Date('01-05-2017'),
+    lastViewedByUser: new Date('01-03-2017'),
+    notify: false,
+    uiState: '{\"date\": [\"01-01-2017\", null], \"list\": [\"item3\", \"item4\"]}'
+  }, {
+    lastAutomatedRun: new Date('01-05-2017'),
+    lastViewedByUser: new Date('01-04-2017'),
+    notify: true,
+    uiState: '{\"date\": [\"01-02-2017\", \"01-03-2017\"], \"list\": [\"item5\", \"item6\"]}'
+  }],
+  sendEmailAlert: true
+}];
+```
+
+```html
+<user-settings-dialog
+  build-search-state-function="[[buildSearchStateFunction]]"
+  build-search-terms-function="[[buildSearchTermsFunction]]"
+  reset-search-dates-function="[[resetSearchDatesFunction]]"
+  show-search
+  cases="[[cases]]"
+  user-id="1234"
+  username="demo_user"
+  blur-images="{{blurImages}}"
+  email-address="{{emailAddress}}"
+  notifications="{{notifications}}"
+  notification-date="{{notificationDate}}"
+  notification-interval="{{notificationInterval}}"
+  search-parameters="{{searchParameters}}">
+</user-settings-dialog>
+```
+
+@demo demo/index.html
+-->
+
+<dom-module id="user-settings-dialog">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: inline-block;
+      }
+
+      paper-icon-button {
+        border-radius: 50%;
+        padding: 5px;
+        min-width: 40px;
+      }
+
+      .checkbox {
+        height: 30px;
+        width: 30px;
+        min-width: 30px;
+      }
+
+      .add-highlight {
+        background-color: yellowgreen;
+      }
+
+      .notification-button {
+        color: var(--secondary-text-color);
+      }
+
+      .notification-button.active {
+        color: var(--primary-text-color);
+      }
+
+      .cases > div {
+        margin: 0 0 10px 10px;
+      }
+
+      terms-display ::content .styled-dialog-name {
+        /* Override margin from terms-display. */
+        margin-left: 0;
+      }
+
+      .search-info {
+        margin-left: 100px;
+      }
+
+      .search-item {
+        margin-left: 10px;
+      }
+
+      paper-listbox {
+        --paper-listbox: {
+          padding: 0;
+        }
+      }
+
+      paper-listbox paper-item {
+        cursor: pointer;
+      }
+
+      .pointer {
+        cursor: pointer;
+      }
+    </style>
+
+    <paper-icon-button
+      id="settingsButton"
+      class$="[[_getSettingsButtonStyleClass(showSearch, notifications)]]"
+      icon="settings"
+      title$="[[_getSettingsButtonText(notifications)]]"
+      on-tap="_openSettingsDialog">
+    </paper-icon-button>
+
+    <styled-dialog id="settingsDialog" header="User Settings" fill>
+      <div class="layout horizontal center styled-dialog-tall">
+        <div class="start-justified flex">
+          <template is="dom-if" if="[[!userLoading]]">
+            <span class="styled-dialog-name styled-dialog-right-space">Logged in as:</span>
+            <span class="styled-dialog-text styled-dialog-right-space">[[username]]</span>
+          </template>
+          <template is="dom-if" if="[[userLoading]]">
+            <span class="styled-dialog-text styled-dialog-right-space">Loading User Settings...</span>
+          </template>
+        </div>
+        <div class="end-justified">
+          <span class="styled-dialog-name styled-dialog-right-space">DIG Version:</span>
+          <span class="styled-dialog-text styled-dialog-right-space">DIG_VERSION</span>
+        </div>
+      </div>
+
+      <div class="styled-dialog-divider"></div>
+
+      <template is="dom-if" if="[[userId]]" restamp="true">
+        <div class="layout horizontal center pointer styled-dialog-tall">
+          <paper-icon-button class="checkbox styled-dialog-right-space" icon="[[_getCheckboxIcon(blurImages)]]" title="Toggle Blur Images" on-tap="_toggleBlur"></paper-icon-button>
+          <span class="styled-dialog-text styled-dialog-right-space" on-tap="_toggleBlur">Blur Images</span>
+        </div>
+
+        <div class="layout horizontal center">
+          <span class="styled-dialog-name styled-dialog-tall styled-dialog-right-space">Email Address for Notifications:</span>
+          <paper-input class="styled-dialog-right-space" label="Enter Email Address" value="{{_emailInput}}"
+            no-label-float type="email" auto-validate invalid="{{_isEmailInvalid}}">
+          </paper-input>
+          <button-action class="styled-dialog-button styled-dialog-right-space" title="Save Email Address" text="Save" disabled="[[_getEmailAddressButtonIsDisabled(_emailInput, _isEmailInvalid)]]"
+            click-listener="[[_createSaveEmailAddressListener()]]">
+          </button-action>
+        </div>
+
+        <div class="layout horizontal center">
+          <span class="styled-dialog-name styled-dialog-tall styled-dialog-right-space">Check Searches for New Results:</span>
+          <paper-dropdown-menu class="styled-dialog-right-space" label="Interval" no-label-float>
+            <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{notificationInterval}}">
+              <paper-item value="never">Never</paper-item>
+              <paper-item value="daily">Every Day</paper-item>
+              <paper-item value="weekly">Every Week</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+          <paper-icon-button class="styled-dialog-right-space" icon="help" title="Click for More Information" on-tap="_toggleNotificationHelp"></paper-icon-button>
+        </div>
+
+        <iron-collapse id="notificationHelp">
+          <span>DIG can automatically run one or more of your saved searches every day or week and notify you if any of those searches have new results.  Select the interval to run your searches above, then select which searches you want to be checked for new results in your list of saved searches below.</span>
+        </iron-collapse>
+
+        <div class="styled-dialog-divider"></div>
+
+        <div class="styled-dialog-name">Saved Cases and Searches</div>
+
+        <div class="layout vertical cases">
+          <template is="dom-if" if="[[cases]]">
+            <template is="dom-repeat" items="[[cases]]" as="case" index-as="caseIndex">
+              <div class="layout vertical case-item">
+                <div class="layout horizontal center">
+                  <paper-icon-button
+                    class$="styled-dialog-right-space notification-button [[_getNotificationButtonStyleClass(notificationInterval, case.sendEmailAlert)]]"
+                    icon$="[[_getNotificationButtonIcon(notificationInterval, case.sendEmailAlert)]]"
+                    title="[[_getNotificationButtonText(notificationInterval, case.sendEmailAlert)]]"
+                    on-tap="_toggleEmailAlert">
+                  </paper-icon-button>
+
+                  <paper-icon-button
+                    class="styled-dialog-right-space delete-button"
+                    icon="delete"
+                    title="Delete Saved Search"
+                    on-tap="_openDeleteCaseDialog">
+                  </paper-icon-button>
+
+                  <div class="styled-dialog-name styled-dialog-right-space">Name</div>
+                  <div class="styled-dialog-text styled-dialog-right-space">[[case.name]]</div>
+                </div>
+
+                <template is="dom-repeat" items="[[case.searches]]" as="search" index-as="searchIndex">
+                  <div class="layout vertical search-item">
+                    <div class="layout horizontal center">
+                      <paper-icon-button
+                        case$="[[caseIndex]]"
+                        class$="styled-dialog-right-space search-button [[_getRunButtonStyleClass(showSearch, search.notify)]]"
+                        icon="search"
+                        title$="[[_getRunButtonText(showSearch, search.notify)]]"
+                        on-tap="_runSearch"
+                        disabled="[[!showSearch]]">
+                      </paper-icon-button>
+
+                      <paper-icon-button
+                        class="styled-dialog-right-space delete-button"
+                        icon="delete"
+                        title="Delete Saved Search"
+                        on-tap="_openDeleteSearchDialog">
+                      </paper-icon-button>
+
+                      <terms-display
+                        collection="[[_getTermsDisplayCollection(search.uiState)]]"
+                        term-label="Terms">
+                      </terms-display>
+                    </div>
+
+                    <div class="layout horizontal center search-info styled-dialog-tall">
+                      <div class="styled-dialog-note styled-dialog-right-space">You Last Ran on [[_formatDate(search.lastViewedByUser)]]</div>
+                      <div class="styled-dialog-right-space"> |</div>
+                      <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(search.lastAutomatedRun)]]</div>
+                    </div>
+                  </div>
+                </template>
+
+                <div class="styled-dialog-divider"></div>
+              </div>
+            </template>
+          </template>
+        </div>
+      </template>
+
+      <template is="dom-if" if="[[!userId]]" restamp="true">
+        Creating user settings...
+      </template>
+    </styled-dialog>
+
+    <styled-dialog id="deleteCaseDialog" modal>
+      <div class="styled-dialog-bold">Are you sure you want to delete this case?</div>
+      <div class="layout horizontal center-justified">
+        <button-action dialog-confirm class="styled-dialog-button" text="OK" click-listener="[[_createDeleteCaseListener()]]"></button-action>
+        <button-action dialog-dismiss class="styled-dialog-button" text="Cancel"></button-action>
+      </div>
+    </styled-dialog>
+
+    <styled-dialog id="deleteSearchDialog" modal>
+      <div class="styled-dialog-bold">Are you sure you want to delete this search?</div>
+      <div class="layout horizontal center-justified">
+        <button-action dialog-confirm class="styled-dialog-button" text="OK" click-listener="[[_createDeleteSearchListener()]]"></button-action>
+        <button-action dialog-dismiss class="styled-dialog-button" text="Cancel"></button-action>
+      </div>
+    </styled-dialog>
+  </template>
+
+  <script>
+  (function() {
+    /* globals _, moment */
+    'use strict';
+
+    Polymer({
+      is: 'user-settings-dialog',
+
+      properties: {
+        /**
+         * (Optional|Output)
+         *
+         * Whether to blur images for the user.
+         *
+         * @type {Boolean}
+         * @default false
+         */
+        blurImages: {
+          notify: true,
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * (Required)
+         *
+         * The function to build the `searchParameters` from the saved search state object.  Arguments:  {Object} stateObject
+         *
+         * @type {Object}
+         */
+        buildSearchStateFunction: {
+          type: Object
+        },
+
+        /**
+         * (Required)
+         *
+         * The function to build the input for the `terms-display` from the saved search state object.  Arguments:  {Object} stateObject
+         *
+         * @type {Object}
+         */
+        buildSearchTermsFunction: {
+          type: Object
+        },
+
+        /**
+         * (Required|Output)
+         *
+         * The saved cases for the user.
+         *
+         * @type {Array}
+         */
+        cases: {
+          notify: true,
+          observer: '_updateNotifications',
+          type: Array
+        },
+
+        /**
+         * (Optional|Output)
+         *
+         * The email address for the user.
+         *
+         * @type {String}
+         */
+        emailAddress: {
+          notify: true,
+          observer: '_updateEmailInput',
+          type: String
+        },
+
+        /**
+         * (Optional|Output)
+         *
+         * Whether the user has notifications.
+         *
+         * @type {Boolean}
+         * @default false
+         */
+        notifications: {
+          notify: true,
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * (Optional|Output)
+         *
+         * The notification interval for the user.
+         *
+         * @type {String}
+         * @default 'never'
+         */
+        notificationInterval: {
+          notify: true,
+          type: String,
+          value: 'never'
+        },
+
+        /**
+         * (Output)
+         *
+         * The notification date for the user.  Is set if the user runs a search with a notification using the date on which the user last viewed the search.
+         *
+         * @type {Object}
+         */
+        notificationDate: {
+          notify: true,
+          type: Object
+        },
+
+        /**
+         * (Output)
+         *
+         * Whether to run new searches.
+         *
+         * @type {Boolean}
+         */
+        processRequest: {
+          notify: true,
+          type: Boolean
+        },
+
+        /**
+         * (Required)
+         *
+         * The function to reset the dates in the saved search state object.  Arguments:  {Object} stateObject, {Date} startDate
+         *
+         * @type {Object}
+         */
+        resetSearchDatesFunction: {
+          type: Object
+        },
+
+        /**
+         * (Optional|Output)
+         *
+         * The search parameters.
+         *
+         * @type {Object}
+         */
+        searchParameters: {
+          notify: true,
+          type: Object
+        },
+
+        /**
+         * (Optional)
+         *
+         * Whether to let the user run searches.
+         *
+         * @type {Boolean}
+         * @default false
+         */
+        showSearch: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * (Required)
+         *
+         * The name of the user.
+         *
+         * @type {String}
+         */
+        username: {
+          type: String
+        },
+
+        /**
+         * (Required)
+         *
+         * The unique ID of the user.
+         *
+         * @type {String}
+         */
+        userId: {
+          type: String
+        },
+
+        /**
+         * (Optional)
+         *
+         * Whether the user profile is loading.
+         *
+         * @type {Boolean}
+         * @default false
+         */
+        userLoading: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * The index of the case to delete (or the index of the case with a search to delete if `_deleteSearchIndex` is set).
+         *
+         * @type {Number}
+         * @private
+         */
+        _deleteCaseIndex: {
+          type: Number
+        },
+
+        /**
+         * The index of the search to delete (from the case at the index of `_deleteCaseIndex`).
+         *
+         * @type {Number}
+         * @private
+         */
+        _deleteSearchIndex: {
+          type: Number
+        },
+
+        /**
+         * The email input.
+         *
+         * @type {String}
+         * @private
+         */
+        _emailInput: {
+          type: String
+        },
+
+        /**
+         * Whether the `searchParameters` are being set by `_runSearch`.  If so, do not reset the `notificationDate`.
+         *
+         * @type {Boolean}
+         * @private
+         */
+        _handlingSearch: {
+          type: Boolean
+        },
+
+        /**
+         * Whether the email input is invalid.
+         *
+         * @type {Boolean}
+         * @private
+         */
+        _isEmailInvalid: {
+          type: Boolean
+        }
+      },
+
+      observers: [
+        '_deleteNotificationDate(searchParameters.*)',
+      ],
+
+      /**
+       * Returns a `button-action` listener to delete the case at `_deleteCaseIndex`.
+       *
+       * @return {Object}
+       * @private
+       */
+      _createDeleteCaseListener: function() {
+        var self = this;
+        return {
+          onClick: function() {
+            self.splice('cases', self._deleteCaseIndex, 1);
+          }
+        };
+      },
+
+      /**
+       * Returns a `button-action` listener to delete the search at `_deleteSearchIndex` in the case at `_deleteCaseIndex`.
+       *
+       * @return {Object}
+       * @private
+       */
+      _createDeleteSearchListener: function() {
+        var self = this;
+        return {
+          onClick: function() {
+            self.splice(['cases', self._deleteCaseIndex, 'searches'], self._deleteSearchIndex, 1);
+          }
+        };
+      },
+
+      /**
+       * Returns a `button-action` listener to save the email address in `_emailInput` as `emailAddress`.
+       *
+       * @return {Object}
+       * @private
+       */
+      _createSaveEmailAddressListener: function() {
+        var self = this;
+        return {
+          onClick: function() {
+            if(self._emailInput) {
+              self.set('emailAddress', self._emailInput);
+            }
+          }
+        };
+      },
+
+      /**
+       * Creates and returns a new object for the searchParameters using the given state.
+       *
+       * @param {String} stateString
+       * @param {Date} lastViewedByUser
+       * @return {Object}
+       * @private
+       */
+      _createSearchParameters: function(stateString, lastViewedByUser) {
+        var stateObject = stateString ? JSON.parse(stateString) : {};
+        var searchParameters = this.buildSearchStateFunction ? this.buildSearchStateFunction(stateObject) : undefined;
+        return (searchParameters && this.resetSearchDatesFunction) ? this.resetSearchDatesFunction(searchParameters, this._formatDate(lastViewedByUser)) : searchParameters;
+      },
+
+      /**
+       * Deletes the `notificationDate` if not in the middle of `_runSearch` (if `_handlingSearch` is false).
+       *
+       * @private
+       */
+      _deleteNotificationDate: function() {
+        if(!this._handlingSearch) {
+          this.notificationDate = null;
+        }
+      },
+
+      /**
+       * Returns the formatted date string.
+       *
+       * @param {Date} date
+       * @return {String}
+       * @private
+       */
+      _formatDate: function(date) {
+        return date ? moment.utc(new Date(date)).format('MMMM DD, YYYY') : '';
+      },
+
+      /**
+       * Returns the checkbox icon for the given status.
+       *
+       * @param {Boolean} checkboxStatus
+       * @return {String}
+       * @private
+       */
+      _getCheckboxIcon: function(checkboxStatus) {
+        return checkboxStatus ? 'check-box' : 'check-box-outline-blank';
+      },
+
+      /**
+       * Returns whether the 'save email address' button is disabled.
+       *
+       * @param {String} emailAddress
+       * @param {Boolean} isEmailInvalid
+       * @return {Boolean}
+       * @private
+       */
+      _getEmailAddressButtonIsDisabled: function(emailAddress, isEmailInvalid) {
+        return (!emailAddress) || isEmailInvalid;
+      },
+
+      /**
+       * Returns the icon for the notification button with the given interval and status.
+       *
+       * @param {String} notificationInterval
+       * @param {Boolean} notificationStatus
+       * @return {String}
+       * @private
+       */
+      _getNotificationButtonIcon: function(notificationInterval, notificationStatus) {
+        return notificationInterval === 'never' || !notificationStatus ? 'social:notifications-off' : 'social:notifications-active';
+      },
+
+      /**
+       * Returns the style class for the notification button with the given interval and status.
+       *
+       * @param {String} notificationInterval
+       * @param {Boolean} notificationStatus
+       * @return {String}
+       * @private
+       */
+      _getNotificationButtonStyleClass: function(notificationInterval, notificationStatus) {
+        return notificationInterval === 'never' || !notificationStatus ? '' : 'active';
+      },
+
+      /**
+       * Returns the text for the notification button with the given interval and status.
+       *
+       * @param {String} notificationInterval
+       * @param {Boolean} notificationStatus
+       * @return {String}
+       * @private
+       */
+      _getNotificationButtonText: function(notificationInterval, notificationStatus) {
+        if(notificationInterval === 'never') {
+          return 'Please choose a notification interval above to enable notifications on saved searches.';
+        }
+        return 'Notifications ' + (notificationStatus ? 'ON' : 'OFF') + ' (Click to Toggle ' + (notificationStatus ? 'OFF' : 'ON') + ')';
+      },
+
+      /**
+       * Returns the style class for the 'run search' button with the given settings.
+       *
+       * @param {Boolean} showSearch
+       * @param {Boolean} notify
+       * @return {String}
+       * @private
+       */
+      _getRunButtonStyleClass: function(showSearch, notify) {
+        return showSearch && notify ? 'add-highlight' : '';
+      },
+
+      /**
+       * Returns the text for the 'run search' button with the given settings.
+       *
+       * @param {Boolean} showSearch
+       * @param {Boolean} notify
+       * @return {String}
+       * @private
+       */
+      _getRunButtonText: function(showSearch, notify) {
+        if(showSearch) {
+          return 'Please Return to Search Page to Run Saved Search';
+        }
+        return 'Run Saved Search' + (notify ? ' (New Results Available)' : '');
+      },
+
+      /**
+       * Returns the style class for the settings button with the given settings.
+       *
+       * @param {Boolean} showSearch
+       * @param {Boolean} notifications
+       * @return {String}
+       * @private
+       */
+      _getSettingsButtonStyleClass: function(showSearch, notifications) {
+        return showSearch && notifications ? 'add-highlight' : '';
+      },
+
+      /**
+       * Returns the text for the settings button with the given status.
+       *
+       * @param {Boolean} notifications
+       * @return {String}
+       * @private
+       */
+      _getSettingsButtonText: function(notifications) {
+        return 'Open User Settings' + (notifications ? ' (You Have Notifications)' : '');
+      },
+
+      /**
+       * Returns the object for the `terms-display` using the given state.
+       *
+       * @param {String} stateString
+       * @return {Object}
+       * @private
+       */
+      _getTermsDisplayCollection: function(stateString) {
+        var stateObject = stateString ? JSON.parse(stateString) : {};
+        return this.buildSearchTermsFunction ? this.buildSearchTermsFunction(stateObject) : undefined;
+      },
+
+      /**
+       * Opens the 'delete case' dialog.
+       *
+       * @param {Event} event
+       * @private
+       */
+      _openDeleteCaseDialog: function(event) {
+        this._deleteCaseIndex = event.model.caseIndex;
+        this.$$('#deleteCaseDialog').open();
+      },
+
+      /**
+       * Opens the 'delete search' dialog.
+       *
+       * @param {Event} event
+       * @private
+       */
+      _openDeleteSearchDialog: function(event) {
+        this._deleteCaseIndex = event.model.caseIndex;
+        this._deleteSearchIndex = event.model.searchIndex;
+        this.$$('#deleteSearchDialog').open();
+      },
+
+      /**
+       * Opens the settings dialog.
+       *
+       * @private
+       */
+      _openSettingsDialog: function() {
+        this.$$('#settingsDialog').open();
+      },
+
+      /**
+       * Runs the search in the given event by setting `searchParameters`.
+       *
+       * @param {Event} event
+       * @private
+       */
+      _runSearch: function(event) {
+        this.$$('#settingsDialog').close();
+        this.set('processRequest', false);
+
+        this._updateNotificationDate(event.model.caseIndex, event.model.searchIndex);
+
+        this._handlingSearch = true;
+        var search = this.cases[event.model.caseIndex].searches[event.model.searchIndex];
+        this.set('searchParameters', this._createSearchParameters(search.uiState, this.notificationDate));
+        this.set('processRequest', true);
+        this._handlingSearch = false;
+
+        this._updateNotifications();
+      },
+
+      /**
+       * Toggles `blurImages`.
+       *
+       * @private
+       */
+      _toggleBlur: function() {
+        this.set('blurImages', !this.blurImages);
+      },
+
+      /**
+       * Toggles 'sendEmailAlert` for the case in the given event.
+       *
+       * @param {Event} event
+       * @private
+       */
+      _toggleEmailAlert: function(event) {
+        this.set(['cases', event.model.caseIndex, 'sendEmailAlert'], !this.cases[event.model.caseIndex].sendEmailAlert);
+      },
+
+      /**
+       * Toggles the notification help text.
+       *
+       * @private
+       */
+      _toggleNotificationHelp: function() {
+        this.$$('#notificationHelp').toggle();
+      },
+
+      /**
+       * Updates `_emailInput` using the given email address.
+       *
+       * @param {String} emailAddress
+       * @private
+       */
+      _updateEmailInput: function(emailAddress) {
+        this._emailInput = emailAddress;
+      },
+
+      /**
+       * Updates `notifications` by iterating over the cases and searches.
+       *
+       * @private
+       */
+      _updateNotifications: function() {
+        this.notifications = this.cases.some(function(caseObject) {
+          return caseObject.searches.some(function(search) {
+            return search.notify;
+          });
+        });
+      },
+
+      /**
+       * Updates the `notificationDate` and the `lastViewedByUser` date and `notify` status of the search at the given index in the case at the given index.
+       *
+       * @param {Number} caseIndex
+       * @param {Number} searchIndex
+       * @private
+       */
+      _updateNotificationDate: function(caseIndex, searchIndex) {
+        var search = _.clone(this.cases[caseIndex].searches[searchIndex]);
+
+        if(search.notify) {
+          // notification queries have to be sorted in descending order so that newest
+          // results are first
+          search.notify = false;
+          this.notificationDate = new Date(search.lastViewedByUser);
+        } else {
+          // if not a notification query, reset notification flags
+          this._deleteNotificationDate();
+        }
+
+        search.lastViewedByUser = new Date();
+        this.splice(['cases', caseIndex, 'searches'], searchIndex, 1, search);
+      },
+    });
+  })();
+  </script>
+</dom-module>

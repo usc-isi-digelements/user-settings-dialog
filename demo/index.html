@@ -1,0 +1,142 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+  <link rel="import" href="../user-settings-dialog.html">
+</head>
+
+<body unresolved>
+  <template is="dom-bind" id="demo">
+    <h3>Input</h3>
+    <p>Username: demo_user</p>
+    <p>User Id: 1234</p>
+    <p>Show Search: true</p>
+    <p>Cases: [[stringify(cases)]]</p>
+    <p>Build Search State Function: [[buildSearchStateFunction]]</p>
+    <p>Build Search Terms Function: [[buildSearchTermsFunction]]</p>
+    <p>Reset Search Dates Function: [[resetSearchDatesFunction]]</p>
+
+    <h3>Output</h3>
+    <p>Search Parameters: [[stringify(searchParameters)]]<p>
+    <p>Notifications: [[notifications]]</p>
+    <p>Notification Date: [[notificationDate]]</p>
+    <p>Notification Interval: [[notificationInterval]]</p>
+    <p>Email Address: [[emailAddress]]</p>
+    <p>Blur Images: [[blurImages]]</p>
+
+    <h3>Element</h3>
+
+    <user-settings-dialog
+      build-search-state-function="[[buildSearchStateFunction]]"
+      build-search-terms-function="[[buildSearchTermsFunction]]"
+      reset-search-dates-function="[[resetSearchDatesFunction]]"
+      show-search
+      cases="[[cases]]"
+      user-id="1234"
+      username="demo_user"
+      blur-images="{{blurImages}}"
+      email-address="{{emailAddress}}"
+      notifications="{{notifications}}"
+      notification-date="{{notificationDate}}"
+      notification-interval="{{notificationInterval}}"
+      search-parameters="{{searchParameters}}">
+    </user-settings-dialog>
+  </template>
+
+  <script>
+    (function(document) {
+      var demo = document.querySelector('#demo');
+
+      demo.buildSearchStateFunction = function(state) {
+        return {
+          date: state.date || [],
+          fieldA: state.fieldA || [],
+          fieldB: state.fieldB || [],
+          fieldC: state.fieldC || [],
+          fieldD: state.fieldD || []
+        };
+      };
+
+      demo.buildSearchTermsFunction = function(state) {
+        return {
+          'Start Date': state.date && state.date.length === 2 && state.date[0] ? [state.date[0]] : [],
+          'End Date': state.date && state.date.length === 2 && state.date[1] ? [state.date[1]] : [],
+          'Field A': state.fieldA,
+          'Field B': state.fieldB,
+          'Field C': state.fieldC,
+          'Field D': state.fieldD
+        };
+      };
+
+      demo.resetSearchDatesFunction = function(state, start, end) {
+        return {
+          date: (start || end) ? [start, end] : state.date,
+          fieldA: state.fieldA,
+          fieldB: state.fieldB,
+          fieldC: state.fieldC,
+          fieldD: state.fieldD
+        };
+      };
+
+      demo.cases = [{
+        name: 'Case #1',
+        searches: [],
+        sendEmailAlert: false
+      }, {
+        name: 'Case #2',
+        searches: [{
+          lastAutomatedRun: new Date('01-05-2017'),
+          lastViewedByUser: new Date('01-01-2017'),
+          notify: false,
+          uiState: '{\"fieldA\": [\"value0\"]}'
+        }],
+        sendEmailAlert: false
+      }, {
+        name: 'Case #3',
+        searches: [{
+          lastAutomatedRun: new Date('01-05-2017'),
+          lastViewedByUser: new Date('01-02-2017'),
+          notify: true,
+          uiState: '{\"date\": [\"01-01-2017\", null], \"fieldB\": [\"value1\"], \"fieldC\": [\"value2\"], \"fieldD\": [\"value3\"]}'
+        }],
+        sendEmailAlert: true
+      }, {
+        name: 'Case #4',
+        searches: [{
+          lastAutomatedRun: new Date('01-05-2017'),
+          lastViewedByUser: new Date('01-03-2017'),
+          notify: false,
+          uiState: '{\"fieldA\": [\"value4\"], \"fieldB\": [\"value5\"]}'
+        }, {
+          lastAutomatedRun: new Date('01-05-2017'),
+          lastViewedByUser: new Date('01-04-2017'),
+          notify: true,
+          uiState: '{\"date\": [\"01-01-2017\", \"01-29-2017\"], \"fieldC\": [\"value6\", \"value7\"], \"fieldD\": [\"value8\", \"value9\"]}'
+        }],
+        sendEmailAlert: true
+      }];
+
+      demo.stringify = function(object) {
+        return JSON.stringify(object);
+      };
+    })(document);
+  </script>
+</body>
+</html>
