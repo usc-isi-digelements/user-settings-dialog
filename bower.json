@@ -1,7 +1,7 @@
 {
   "name": "user-settings-dialog",
   "description": "A Polymer Element showing a button that opens a dialog with user settings.",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "authors": ["Next Century Corporation"],
   "license": "Apache-2.0",
   "keywords": [
@@ -15,22 +15,23 @@
     "/test/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.7.0",
-    "button-action": "DigElements/button-action#1.0.3",
-    "iron-collapse": "PolymerElements/iron-collapse#^1.0.0",
-    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
-    "iron-icons": "PolymerElements/iron-icons#^1.0.0",
-    "moment-element": "bendavis78/moment-element#^1.1.0",
-    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.0.0",
-    "paper-icon-button": "PolymerElements/paper-icon-button#^1.0.0",
-    "paper-input": "PolymerElements/paper-input#^1.0.0",
-    "paper-item": "PolymerElements/paper-item#^1.0.0",
-    "paper-listbox": "PolymerElements/paper-listbox#^1.0.0",
-    "styled-dialog": "DigElements/styled-dialog#1.0.7",
-    "terms-display": "DigElements/terms-display#1.0.1"
+    "polymer": "Polymer/polymer#^2.0.2",
+    "button-action": "DigElements/button-action#2.0.0",
+    "iron-collapse": "PolymerElements/iron-collapse#^2.0.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^2.0.0",
+    "iron-icons": "PolymerElements/iron-icons#^2.0.0",
+    "moment-element": "uxland/moment-element#^1.1.3",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^2.0.0",
+    "paper-icon-button": "PolymerElements/paper-icon-button#^2.0.0",
+    "paper-input": "PolymerElements/paper-input#^2.0.0",
+    "paper-item": "PolymerElements/paper-item#^2.0.0",
+    "paper-listbox": "PolymerElements/paper-listbox#^2.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^2.0.0",
+    "styled-dialog": "DigElements/styled-dialog#2.1.1",
+    "terms-display": "DigElements/terms-display#2.1.0"
   },
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#^1.1.7",
-    "web-component-tester": "^5.0.0"
+    "iron-component-page": "PolymerElements/iron-component-page#^2.0.0",
+    "web-component-tester": "^6.0.0"
   }
 }

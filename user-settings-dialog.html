@@ -27,7 +27,10 @@ limitations under the License.
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../paper-styles/shadow.html">
 <link rel="import" href="../styled-dialog/styled-dialog.html">
+<link rel="import" href="../styled-dialog/styled-dialog-styles.html">
 <link rel="import" href="../terms-display/terms-display.html">
 
 <!--
@@ -44,9 +47,9 @@ demo.buildSearchStateFunction = function(state) {
 
 demo.buildSearchTermsFunction = function(state) {
   return {
-    'Start Date': state.date && state.date.length === 2 && state.date[0] ? [state.date[0]] : [],
-    'End Date': state.date && state.date.length === 2 && state.date[1] ? [state.date[1]] : [],
-    'List Data': state.list
+    'Start': state.date && state.date.length === 2 && state.date[0] ? [state.date[0]] : [],
+    'End': state.date && state.date.length === 2 && state.date[1] ? [state.date[1]] : [],
+    'Data': state.list
   };
 };
 
@@ -120,6 +123,7 @@ demo.cases = [{
 <dom-module id="user-settings-dialog">
   <template>
     <style include="iron-flex iron-flex-alignment"></style>
+    <style include="styled-dialog-styles"></style>
     <style>
       :host {
         display: inline-block;
@@ -153,9 +157,18 @@ demo.cases = [{
         margin: 0 0 10px 10px;
       }
 
-      terms-display ::content .styled-dialog-name {
-        /* Override margin from terms-display. */
-        margin-left: 0;
+      .case-item {
+        background-color: var(--primary-background-color);
+        box-shadow: var(--shadow-elevation-4dp);
+        padding: 10px;
+      }
+
+      .case-info {
+        margin-bottom: 10px;
+      }
+
+      .case-item .styled-dialog-divider {
+        border-color: var(--secondary-text-color);
       }
 
       .search-info {
@@ -163,7 +176,7 @@ demo.cases = [{
       }
 
       .search-item {
-        margin-left: 10px;
+        margin-top: 10px;
       }
 
       paper-listbox {
@@ -227,7 +240,7 @@ demo.cases = [{
         <div class="layout horizontal center">
           <span class="styled-dialog-name styled-dialog-tall styled-dialog-right-space">Check Searches for New Results:</span>
           <paper-dropdown-menu class="styled-dialog-right-space" label="Interval" no-label-float>
-            <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{notificationInterval}}">
+            <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{notificationInterval}}">
               <paper-item value="never">Never</paper-item>
               <paper-item value="daily">Every Day</paper-item>
               <paper-item value="weekly">Every Week</paper-item>
@@ -248,7 +261,7 @@ demo.cases = [{
           <template is="dom-if" if="[[cases]]">
             <template is="dom-repeat" items="[[cases]]" as="case" index-as="caseIndex">
               <div class="layout vertical case-item">
-                <div class="layout horizontal center">
+                <div class="layout horizontal center case-info">
                   <paper-icon-button
                     class$="styled-dialog-right-space notification-button [[_getNotificationButtonStyleClass(notificationInterval, case.sendEmailAlert)]]"
                     icon$="[[_getNotificationButtonIcon(notificationInterval, case.sendEmailAlert)]]"
@@ -268,6 +281,8 @@ demo.cases = [{
                 </div>
 
                 <template is="dom-repeat" items="[[case.searches]]" as="search" index-as="searchIndex">
+                  <div class="styled-dialog-divider"></div>
+
                   <div class="layout vertical search-item">
                     <div class="layout horizontal center">
                       <paper-icon-button
@@ -300,7 +315,10 @@ demo.cases = [{
                   </div>
                 </template>
 
-                <div class="styled-dialog-divider"></div>
+                <template is="dom-if" if="[[!case.searches.length]]">
+                  <div class="styled-dialog-divider"></div>
+                  <div class="styled-dialog-name styled-dialog-tall search-item search-info">No Saved Searches</div>
+                </template>
               </div>
             </template>
           </template>

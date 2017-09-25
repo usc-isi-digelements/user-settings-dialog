@@ -83,7 +83,6 @@ demo.cases = [{
 </user-settings-dialog>
 ```
 
-```
 ### Dependencies
 
 Dependencies are installed using [Bower](http://bower.io/):
