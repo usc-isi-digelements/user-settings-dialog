@@ -16,6 +16,7 @@ limitations under the License.
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../button-action/button-action.html">
+<link rel="import" href="../fontawesome-iconset/fa-all.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
@@ -135,10 +136,10 @@ demo.cases = [{
         min-width: 40px;
       }
 
-      .checkbox {
-        height: 30px;
-        width: 30px;
-        min-width: 30px;
+      .little-button {
+        height: 35px;
+        width: 35px;
+        min-width: 35px;
       }
 
       .add-highlight {
@@ -179,31 +180,52 @@ demo.cases = [{
         margin-top: 10px;
       }
 
+      paper-dropdown-menu,
+      paper-input {
+        --paper-input-container: {
+          padding: 0 !important;
+        };
+      }
+
+      paper-input {
+        /* Match the width of the dropdown menu. */
+        width: 225px;
+      }
+
       paper-listbox {
         --paper-listbox: {
           padding: 0;
-        }
+        };
       }
 
       paper-listbox paper-item {
-        cursor: pointer;
+        --paper-item-min-height: 30px;
+        --paper-item: {
+          cursor: pointer;
+          padding: 0 10px;
+          white-space: nowrap;
+        };
       }
 
       .pointer {
         cursor: pointer;
+      }
+
+      .set-width: {
+        width: 245px;
       }
     </style>
 
     <paper-icon-button
       id="settingsButton"
       class$="[[_getSettingsButtonStyleClass(showSearch, notifications)]]"
-      icon="settings"
+      icon="fa:cog"
       title$="[[_getSettingsButtonText(notifications)]]"
       on-tap="_openSettingsDialog">
     </paper-icon-button>
 
     <styled-dialog id="settingsDialog" header="User Settings" fill>
-      <div class="layout horizontal center styled-dialog-tall">
+      <div class="layout horizontal center">
         <div class="start-justified flex">
           <template is="dom-if" if="[[!userLoading]]">
             <span class="styled-dialog-name styled-dialog-right-space">Logged in as:</span>
@@ -222,23 +244,19 @@ demo.cases = [{
       <div class="styled-dialog-divider"></div>
 
       <template is="dom-if" if="[[userId]]" restamp="true">
-        <div class="layout horizontal center pointer styled-dialog-tall">
-          <paper-icon-button class="checkbox styled-dialog-right-space" icon="[[_getCheckboxIcon(blurImages)]]" title="Toggle Blur Images" on-tap="_toggleBlur"></paper-icon-button>
-          <span class="styled-dialog-text styled-dialog-right-space" on-tap="_toggleBlur">Blur Images</span>
+        <div class="layout horizontal center">
+          <paper-icon-button class="little-button styled-dialog-right-space" icon="[[_getCheckboxIcon(blurImages, userId)]]" title="Toggle Blur Images" on-tap="_toggleBlur"></paper-icon-button>
+          <span class="pointer styled-dialog-text styled-dialog-right-space" on-tap="_toggleBlur">Blur Images</span>
         </div>
 
         <div class="layout horizontal center">
-          <span class="styled-dialog-name styled-dialog-tall styled-dialog-right-space">Email Address for Notifications:</span>
-          <paper-input class="styled-dialog-right-space" label="Enter Email Address" value="{{_emailInput}}"
-            no-label-float type="email" auto-validate invalid="{{_isEmailInvalid}}">
-          </paper-input>
-          <button-action class="styled-dialog-button styled-dialog-right-space" title="Save Email Address" text="Save" disabled="[[_getEmailAddressButtonIsDisabled(_emailInput, _isEmailInvalid)]]"
-            click-listener="[[_createSaveEmailAddressListener()]]">
-          </button-action>
+          <span class="set-width styled-dialog-name styled-dialog-right-space">Email Address for Notifications:</span>
+          <paper-input class="styled-dialog-right-space" label="Enter Email Address" value="{{_emailInput}}" no-label-float type="email" auto-validate invalid="{{_isEmailInvalid}}"></paper-input>
+          <paper-icon-button class="little-button styled-dialog-right-space" disabled="[[_getEmailAddressButtonIsDisabled(_emailInput, _isEmailInvalid)]]" icon="fa:floppy-o" title="Save Email Address" on-tap="_saveEmailAddress"></paper-icon-button>
         </div>
 
         <div class="layout horizontal center">
-          <span class="styled-dialog-name styled-dialog-tall styled-dialog-right-space">Check Searches for New Results:</span>
+          <span class="set-width styled-dialog-name styled-dialog-right-space">Check Searches for New Results:</span>
           <paper-dropdown-menu class="styled-dialog-right-space" label="Interval" no-label-float>
             <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{notificationInterval}}">
               <paper-item value="never">Never</paper-item>
@@ -246,7 +264,7 @@ demo.cases = [{
               <paper-item value="weekly">Every Week</paper-item>
             </paper-listbox>
           </paper-dropdown-menu>
-          <paper-icon-button class="styled-dialog-right-space" icon="help" title="Click for More Information" on-tap="_toggleNotificationHelp"></paper-icon-button>
+          <paper-icon-button class="little-button styled-dialog-right-space" icon="fa:question-circle" title="Click for More Information" on-tap="_toggleNotificationHelp"></paper-icon-button>
         </div>
 
         <iron-collapse id="notificationHelp">
@@ -271,7 +289,7 @@ demo.cases = [{
 
                   <paper-icon-button
                     class="styled-dialog-right-space delete-button"
-                    icon="delete"
+                    icon="fa:trash"
                     title="Delete Saved Search"
                     on-tap="_openDeleteCaseDialog">
                   </paper-icon-button>
@@ -288,7 +306,7 @@ demo.cases = [{
                       <paper-icon-button
                         case$="[[caseIndex]]"
                         class$="styled-dialog-right-space search-button [[_getRunButtonStyleClass(showSearch, search.notify)]]"
-                        icon="search"
+                        icon="fa:search"
                         title$="[[_getRunButtonText(showSearch, search.notify)]]"
                         on-tap="_runSearch"
                         disabled="[[!showSearch]]">
@@ -296,7 +314,7 @@ demo.cases = [{
 
                       <paper-icon-button
                         class="styled-dialog-right-space delete-button"
-                        icon="delete"
+                        icon="fa:delete"
                         title="Delete Saved Search"
                         on-tap="_openDeleteSearchDialog">
                       </paper-icon-button>
@@ -362,12 +380,10 @@ demo.cases = [{
          * Whether to blur images for the user.
          *
          * @type {Boolean}
-         * @default false
          */
         blurImages: {
           notify: true,
-          type: Boolean,
-          value: false
+          type: Boolean
         },
 
         /**
@@ -442,8 +458,7 @@ demo.cases = [{
          */
         notificationInterval: {
           notify: true,
-          type: String,
-          value: 'never'
+          type: String
         },
 
         /**
@@ -627,23 +642,6 @@ demo.cases = [{
       },
 
       /**
-       * Returns a `button-action` listener to save the email address in `_emailInput` as `emailAddress`.
-       *
-       * @return {Object}
-       * @private
-       */
-      _createSaveEmailAddressListener: function() {
-        var self = this;
-        return {
-          onClick: function() {
-            if(self._emailInput) {
-              self.set('emailAddress', self._emailInput);
-            }
-          }
-        };
-      },
-
-      /**
        * Creates and returns a new object for the searchParameters using the given state.
        *
        * @param {String} stateString
@@ -687,7 +685,7 @@ demo.cases = [{
        * @private
        */
       _getCheckboxIcon: function(checkboxStatus) {
-        return checkboxStatus ? 'check-box' : 'check-box-outline-blank';
+        return checkboxStatus ? 'fa:toggle-on' : 'fa:toggle-off';
       },
 
       /**
@@ -854,6 +852,18 @@ demo.cases = [{
         this._handlingSearch = false;
 
         this._updateNotifications();
+      },
+
+      /**
+       * Returns a `button-action` listener to save the email address in `_emailInput` as `emailAddress`.
+       *
+       * @return {Object}
+       * @private
+       */
+      _saveEmailAddress: function() {
+        if(this._emailInput) {
+          this.set('emailAddress', this._emailInput);
+        }
       },
 
       /**

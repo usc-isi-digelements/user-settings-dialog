@@ -81,7 +81,7 @@ limitations under the License.
         assert.isFunction(element.buildSearchTermsFunction);
         assert.equal(element.emailAddress, '');
         assert.isFalse(element.notifications);
-        assert.equal(element.notificationInterval, 'never');
+        assert.isUndefined(element.notificationInterval);
         assert.isNull(element.notificationDate);
         assert.isTrue(element.processRequest);
         assert.isFunction(element.resetSearchDatesFunction);
@@ -99,7 +99,7 @@ limitations under the License.
       test('does have settings button element', function() {
         var settingsButton = element.$$('#settingsButton');
         assert(settingsButton);
-        assert.equal(settingsButton.icon, 'settings');
+        assert.equal(settingsButton.icon, 'fa:cog');
         assert.isString(settingsButton.title);
       });
 
@@ -141,7 +141,7 @@ limitations under the License.
         flush(function() {
           assert.isNotNull(element.$$('paper-icon-button[title="Toggle Blur Images"]'));
           assert.isNotNull(element.$$('paper-input[label="Enter Email Address"]'));
-          assert.isNotNull(element.$$('button-action[title="Save Email Address"]'));
+          assert.isNotNull(element.$$('paper-icon-button[title="Save Email Address"]'));
           assert.isNotNull(element.$$('paper-dropdown-menu[label="Interval"]'));
           var cases = Polymer.dom(element.root).querySelectorAll('.case-item');
           assert.equal(cases.length, 1);
@@ -168,7 +168,7 @@ limitations under the License.
         flush(function() {
           assert.isNull(element.$$('paper-icon-button[title="Toggle Blur Images"]'));
           assert.isNull(element.$$('paper-input[label="Enter Email Address"]'));
-          assert.isNull(element.$$('button-action[title="Save Email Address"]'));
+          assert.isNull(element.$$('paper-icon-button[title="Save Email Address"]'));
           assert.isNull(element.$$('paper-dropdown-menu[label="Interval"]'));
           var cases = Polymer.dom(element.root).querySelectorAll('.case-item');
           assert.equal(cases.length, 0);
@@ -198,7 +198,7 @@ limitations under the License.
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
-          assert.isFalse(element.$$('paper-icon-button[icon="search"]').disabled);
+          assert.isFalse(element.$$('paper-icon-button[icon="fa:search"]').disabled);
           done();
         });
       });
@@ -222,7 +222,7 @@ limitations under the License.
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
-          assert.isTrue(element.$$('paper-icon-button[icon="search"]').disabled);
+          assert.isTrue(element.$$('paper-icon-button[icon="fa:search"]').disabled);
           done();
         });
       });
@@ -230,7 +230,7 @@ limitations under the License.
       test('save email address button is disabled if email address is invalid', function(done) {
         element.emailAddress = 'abc';
         flush(function() {
-          assert.isTrue(element.$$('button-action[title="Save Email Address"]').disabled);
+          assert.isTrue(element.$$('paper-icon-button[title="Save Email Address"]').disabled);
           done();
         });
       });
@@ -238,7 +238,7 @@ limitations under the License.
       test('save email address button is not disabled if email address is valid', function(done) {
         element.emailAddress = 'abc@xyz.com';
         flush(function() {
-          assert.isFalse(element.$$('button-action[title="Save Email Address"]').disabled);
+          assert.isFalse(element.$$('paper-icon-button[title="Save Email Address"]').disabled);
           done();
         });
       });
@@ -336,16 +336,6 @@ limitations under the License.
         }]);
       });
 
-      test('_createSaveEmailAddressListener.onClick does set emailAddress to _emailInput', function() {
-        var listener = element._createSaveEmailAddressListener();
-        assert.isObject(listener);
-        assert.isFunction(listener.onClick);
-
-        element._emailInput = 'email@address.com';
-        listener.onClick();
-        assert.equal(element.emailAddress, 'email@address.com');
-      });
-
       test('_createSearchParameters does return a new searchParameters object using buildSearchStateFunction and resetSearchDateFunction', function() {
         assert.deepEqual(element._createSearchParameters('{\"a\":[1],\"b\":[2,3]}', new Date('September 01, 2017')), {
           a: [1],
@@ -387,8 +377,8 @@ limitations under the License.
       });
 
       test('_getCheckboxIcon does return as expected', function() {
-        assert.equal(element._getCheckboxIcon(false), 'check-box-outline-blank');
-        assert.equal(element._getCheckboxIcon(true), 'check-box');
+        assert.equal(element._getCheckboxIcon(false), 'fa:toggle-off');
+        assert.equal(element._getCheckboxIcon(true), 'fa:toggle-on');
       });
 
       test('_getEmailAddressButtonIsDisabled does return as expected', function() {
@@ -677,6 +667,13 @@ limitations under the License.
         var settingsDialog = element.$$('#settingsDialog');
         assert(settingsDialog);
         assert.isFalse(settingsDialog.opened);
+      });
+
+      test('_saveEmailAddress does set emailAddress to _emailInput', function() {
+        element._emailInput = 'email@address.com';
+        assert.equal(element.emailAddress, '');
+        element._saveEmailAddress();
+        assert.equal(element.emailAddress, 'email@address.com');
       });
 
       test('_toggleBlur does toggle blurImages', function() {

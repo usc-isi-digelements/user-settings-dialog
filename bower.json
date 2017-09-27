@@ -1,7 +1,7 @@
 {
   "name": "user-settings-dialog",
   "description": "A Polymer Element showing a button that opens a dialog with user settings.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "authors": ["Next Century Corporation"],
   "license": "Apache-2.0",
   "keywords": [
@@ -17,6 +17,7 @@
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.2",
     "button-action": "DigElements/button-action#2.0.0",
+    "fontawesome-iconset": "https://github.com/vangware/fontawesome-iconset.git#09ac70f619bb44d73fefc5f9524ae29ab217ed15",
     "iron-collapse": "PolymerElements/iron-collapse#^2.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^2.0.0",
     "iron-icons": "PolymerElements/iron-icons#^2.0.0",
