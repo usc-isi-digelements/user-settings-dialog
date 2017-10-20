@@ -16,7 +16,7 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.2",
-    "button-action": "DigElements/button-action#2.0.0",
+    "button-action": "DigElements/button-action#2.0.1",
     "fontawesome-iconset": "https://github.com/vangware/fontawesome-iconset.git#09ac70f619bb44d73fefc5f9524ae29ab217ed15",
     "iron-collapse": "PolymerElements/iron-collapse#^2.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^2.0.0",
@@ -28,8 +28,8 @@
     "paper-item": "PolymerElements/paper-item#^2.0.0",
     "paper-listbox": "PolymerElements/paper-listbox#^2.0.0",
     "paper-styles": "PolymerElements/paper-styles#^2.0.0",
-    "styled-dialog": "DigElements/styled-dialog#2.1.1",
-    "terms-display": "DigElements/terms-display#2.1.0"
+    "styled-dialog": "DigElements/styled-dialog#2.1.2",
+    "terms-display": "DigElements/terms-display#2.1.2"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^2.0.0",
