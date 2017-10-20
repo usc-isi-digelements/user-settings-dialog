@@ -39,14 +39,7 @@ limitations under the License.
       setup(function(done) {
         element = fixture('user-settings-dialog-fixture');
         element.blurImages = false;
-        element.buildSearchStateFunction = function(searchParameters) {
-          return {
-            a: searchParameters.a || [],
-            b: searchParameters.b || [],
-            c: searchParameters.c || []
-          };
-        };
-        element.buildSearchTermsFunction = function(searchParameters) {
+        element.buildPopupDataFunction = function(searchParameters) {
           var object = {};
           if(searchParameters.a) {
             object.x = searchParameters.a;
@@ -59,9 +52,16 @@ limitations under the License.
           }
           return object;
         };
+        element.buildStateDataFunction = function(searchParameters) {
+          return {
+            a: searchParameters.a || [],
+            b: searchParameters.b || [],
+            c: searchParameters.c || []
+          };
+        };
         element.emailAddress = '';
         element.processRequest = true;
-        element.resetSearchDatesFunction = function(searchParameters, startDateString) {
+        element.resetDatesDataFunction = function(searchParameters, startDateString) {
           if(startDateString) {
             searchParameters.startDate = startDateString;
           }
@@ -69,7 +69,7 @@ limitations under the License.
         };
         element.cases = [];
         element.searchParameters = {};
-        element.showSearch = true;
+        element.enableSearch = true;
         element.username = 'testUser';
         element.userId = '1';
         flush(done);
@@ -77,23 +77,28 @@ limitations under the License.
 
       test('properties are set as expected', function() {
         assert.isFalse(element.blurImages);
-        assert.isFunction(element.buildSearchStateFunction);
-        assert.isFunction(element.buildSearchTermsFunction);
+        assert.isFunction(element.buildPopupDataFunction);
+        assert.isFunction(element.buildStateDataFunction);
+        assert.equal(element.documentIcon, '');
+        assert.equal(element.documentStyleClass, '');
+        assert.equal(element.documentTypePlural, 'Documents');
+        assert.equal(element.documentTypeSingular, 'Document');
         assert.equal(element.emailAddress, '');
+        assert.isUndefined(element.entityConfig);
         assert.isFalse(element.notifications);
         assert.isUndefined(element.notificationInterval);
         assert.isNull(element.notificationDate);
         assert.isTrue(element.processRequest);
-        assert.isFunction(element.resetSearchDatesFunction);
+        assert.isFunction(element.resetDatesDataFunction);
         assert.deepEqual(element.cases, []);
         assert.deepEqual(element.searchParameters, {});
-        assert.isTrue(element.showSearch);
+        assert.isTrue(element.enableSearch);
         assert.equal(element.username, 'testUser');
         assert.equal(element.userId, '1');
         assert.isFalse(element.userLoading);
         assert.equal(element._emailInput, '');
         assert.isUndefined(element._handlingSearch);
-        assert.isFalse(element._isEmailInvalid);
+        assert.isUndefined(element._isEmailInvalid);
       });
 
       test('does have settings button element', function() {
@@ -121,8 +126,8 @@ limitations under the License.
         assert.isFalse(deleteDialog.opened);
       });
 
-      test('does have closed delete search dialog element', function() {
-        var deleteDialog = element.$$('#deleteSearchDialog');
+      test('does have closed delete case data dialog element', function() {
+        var deleteDialog = element.$$('#deleteCaseDataDialog');
         assert(deleteDialog);
         assert.isFalse(deleteDialog.fill);
         assert.equal(deleteDialog.header, '');
@@ -133,22 +138,21 @@ limitations under the License.
       test('does show content if userId is defined', function(done) {
         element.cases = [{
           name: 'myCase',
-          searches: [{
+          searchList: [{
             uiState: '{}'
           }],
           sendEmailAlert: false
         }];
         flush(function() {
           assert.isNotNull(element.$$('paper-icon-button[title="Toggle Blur Images"]'));
-          assert.isNotNull(element.$$('paper-input[label="Enter Email Address"]'));
-          assert.isNotNull(element.$$('paper-icon-button[title="Save Email Address"]'));
           assert.isNotNull(element.$$('paper-dropdown-menu[label="Interval"]'));
+          assert.isNull(element.$$('paper-input[label="Enter Email Address"]'));
+          assert.isNull(element.$$('paper-icon-button[title="Save Email Address"]'));
           var cases = Polymer.dom(element.root).querySelectorAll('.case-item');
           assert.equal(cases.length, 1);
           assert.isNotNull(cases[0]);
-          var searches = Polymer.dom(element.root).querySelectorAll('.search-item');
-          assert.equal(searches.length, 1);
-          assert.isNotNull(searches[0]);
+          var caseDataList = Polymer.dom(element.root).querySelectorAll('.case-data-item');
+          assert.equal(caseDataList.length, 1);
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
@@ -159,7 +163,7 @@ limitations under the License.
       test('does not show content if userId is undefined', function(done) {
         element.cases = [{
           name: 'myCase',
-          searches: [{
+          searchList: [{
             uiState: '{}'
           }],
           sendEmailAlert: false
@@ -167,23 +171,32 @@ limitations under the License.
         element.userId = undefined;
         flush(function() {
           assert.isNull(element.$$('paper-icon-button[title="Toggle Blur Images"]'));
+          assert.isNull(element.$$('paper-dropdown-menu[label="Interval"]'));
           assert.isNull(element.$$('paper-input[label="Enter Email Address"]'));
           assert.isNull(element.$$('paper-icon-button[title="Save Email Address"]'));
-          assert.isNull(element.$$('paper-dropdown-menu[label="Interval"]'));
           var cases = Polymer.dom(element.root).querySelectorAll('.case-item');
           assert.equal(cases.length, 0);
-          var searches = Polymer.dom(element.root).querySelectorAll('.search-item');
-          assert.equal(searches.length, 0);
+          var caseDataList = Polymer.dom(element.root).querySelectorAll('.case-data-item');
+          assert.equal(caseDataList.length, 0);
           var displays = Polymer.dom(element.root).querySelectorAll('.terms-display');
           assert.equal(displays.length, 0);
           done();
         });
       });
 
-      test('does enable search buttons if showSearch is true', function(done) {
+      test('does show email address input if enableEmailAddress is true', function(done) {
+        element.enableEmailAddress = true;
+        flush(function() {
+          assert.isNotNull(element.$$('paper-input[label="Enter Email Address"]'));
+          assert.isNotNull(element.$$('paper-icon-button[title="Save Email Address"]'));
+          done();
+        });
+      });
+
+      test('does enable search buttons if enableSearch is true', function(done) {
         element.cases = [{
           name: 'myCase',
-          searches: [{
+          searchList: [{
             uiState: '{}'
           }],
           sendEmailAlert: false
@@ -192,9 +205,8 @@ limitations under the License.
           var cases = Polymer.dom(element.root).querySelectorAll('.case-item');
           assert.equal(cases.length, 1);
           assert.isNotNull(cases[0]);
-          var searches = Polymer.dom(element.root).querySelectorAll('.search-item');
-          assert.equal(searches.length, 1);
-          assert.isNotNull(searches[0]);
+          var caseDataList = Polymer.dom(element.root).querySelectorAll('.case-data-item');
+          assert.equal(caseDataList.length, 1);
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
@@ -203,11 +215,11 @@ limitations under the License.
         });
       });
 
-      test('does not enable search buttons if showSearch is true', function(done) {
-        element.showSearch = false;
+      test('does not enable search buttons if enableSearch is true', function(done) {
+        element.enableSearch = false;
         element.cases = [{
           name: 'myCase',
-          searches: [{
+          searchList: [{
             uiState: '{}'
           }],
           sendEmailAlert: false
@@ -216,9 +228,8 @@ limitations under the License.
           var cases = Polymer.dom(element.root).querySelectorAll('.case-item');
           assert.equal(cases.length, 1);
           assert.isNotNull(cases[0]);
-          var searches = Polymer.dom(element.root).querySelectorAll('.search-item');
-          assert.equal(searches.length, 1);
-          assert.isNotNull(searches[0]);
+          var caseDataList = Polymer.dom(element.root).querySelectorAll('.case-data-item');
+          assert.equal(caseDataList.length, 1);
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
@@ -229,6 +240,7 @@ limitations under the License.
 
       test('save email address button is disabled if email address is invalid', function(done) {
         element.emailAddress = 'abc';
+        element.enableEmailAddress = true;
         flush(function() {
           assert.isTrue(element.$$('paper-icon-button[title="Save Email Address"]').disabled);
           done();
@@ -237,6 +249,7 @@ limitations under the License.
 
       test('save email address button is not disabled if email address is valid', function(done) {
         element.emailAddress = 'abc@xyz.com';
+        element.enableEmailAddress = true;
         flush(function() {
           assert.isFalse(element.$$('paper-icon-button[title="Save Email Address"]').disabled);
           done();
@@ -250,14 +263,14 @@ limitations under the License.
 
         element.cases = [{
           name: 'case1',
-          searches: [{
+          searchList: [{
             uiState: '{\"key1\":\"value1\"}'
           }, {
             uiState: '{\"key2\":\"value2\"}'
           }]
         }, {
           name: 'case2',
-          searches: [{
+          searchList: [{
             uiState: '{\"key3\":\"value3\"}'
           }, {
             uiState: '{\"key4\":\"value4\"}'
@@ -270,7 +283,7 @@ limitations under the License.
 
         assert.deepEqual(element.cases, [{
           name: 'case2',
-          searches: [{
+          searchList: [{
             uiState: '{\"key3\":\"value3\"}'
           }, {
             uiState: '{\"key4\":\"value4\"}'
@@ -278,21 +291,21 @@ limitations under the License.
         }]);
       });
 
-      test('_createDeleteSearchListener.onClick does delete the search at _deleteCaseIndex and _deleteSearchIndex', function() {
-        var listener = element._createDeleteSearchListener();
+      test('_createDeleteCaseDataListener.onClick does delete the data with _deleteCaseIndex, _deleteCaseDataArray, and _deleteCaseDataIndex', function() {
+        var listener = element._createDeleteCaseDataListener();
         assert.isObject(listener);
         assert.isFunction(listener.onClick);
 
         element.cases = [{
           name: 'case1',
-          searches: [{
+          searchList: [{
             uiState: '{\"key1\":\"value1\"}'
           }, {
             uiState: '{\"key2\":\"value2\"}'
           }]
         }, {
           name: 'case2',
-          searches: [{
+          searchList: [{
             uiState: '{\"key3\":\"value3\"}'
           }, {
             uiState: '{\"key4\":\"value4\"}'
@@ -300,18 +313,19 @@ limitations under the License.
         }];
 
         element._deleteCaseIndex = 0;
-        element._deleteSearchIndex = 0;
+        element._deleteCaseDataArray = 'searchList';
+        element._deleteCaseDataIndex = 0;
 
         listener.onClick();
 
         assert.deepEqual(element.cases, [{
           name: 'case1',
-          searches: [{
+          searchList: [{
             uiState: '{\"key2\":\"value2\"}'
           }]
         }, {
           name: 'case2',
-          searches: [{
+          searchList: [{
             uiState: '{\"key3\":\"value3\"}'
           }, {
             uiState: '{\"key4\":\"value4\"}'
@@ -319,24 +333,24 @@ limitations under the License.
         }]);
 
         element._deleteCaseIndex = 1;
-        element._deleteSearchIndex = 1;
+        element._deleteCaseDataIndex = 1;
 
         listener.onClick();
 
         assert.deepEqual(element.cases, [{
           name: 'case1',
-          searches: [{
+          searchList: [{
             uiState: '{\"key2\":\"value2\"}'
           }]
         }, {
           name: 'case2',
-          searches: [{
+          searchList: [{
             uiState: '{\"key3\":\"value3\"}'
           }]
         }]);
       });
 
-      test('_createSearchParameters does return a new searchParameters object using buildSearchStateFunction and resetSearchDateFunction', function() {
+      test('_createSearchParameters does return a new searchParameters object using buildStateDataFunction and resetSearchDateFunction', function() {
         assert.deepEqual(element._createSearchParameters('{\"a\":[1],\"b\":[2,3]}', new Date('September 01, 2017')), {
           a: [1],
           b: [2, 3],
@@ -346,7 +360,7 @@ limitations under the License.
       });
 
       test('_createSearchParameters does override a previous date', function() {
-        element.buildSearchStateFunction = function(searchParameters) {
+        element.buildStateDataFunction = function(searchParameters) {
           return {
             startDate: searchParameters.startDate
           };
@@ -409,18 +423,33 @@ limitations under the License.
         assert.equal(element._getNotificationButtonText('daily', true), 'Notifications ON (Click to Toggle OFF)');
       });
 
-      test('_getRunButtonStyleClass does return as expected', function() {
-        assert.equal(element._getRunButtonStyleClass(true, true), 'add-highlight');
-        assert.equal(element._getRunButtonStyleClass(true, false), '');
-        assert.equal(element._getRunButtonStyleClass(false, false), '');
-        assert.equal(element._getRunButtonStyleClass(false, true), '');
+      test('_getOpenDocumentPageButtonText does return as expected', function() {
+        assert.equal(element._getOpenDocumentPageButtonText(false, 'Page'), 'Open Saved Page');
+        assert.equal(element._getOpenDocumentPageButtonText(true, 'Page'), 'Open Saved Page (New Data Available)');
+      });
+
+      test('_getOpenEntityPageButtonText does return as expected', function() {
+        assert.equal(element._getOpenEntityPageButtonText(false, 'testType', {
+          testType: {
+            name: 'Page'
+          }
+        }), 'Open Saved Page');
+        assert.equal(element._getOpenEntityPageButtonText(true, 'testType', {
+          testType: {
+            name: 'Page'
+          }
+        }), 'Open Saved Page (New Data Available)');
+      });
+
+      test('_getProperty does return correctly', function() {
+        // TODO
       });
 
       test('_getRunButtonText does return as expected', function() {
         assert.equal(element._getRunButtonText(true, true), 'Please Return to Search Page to Run Saved Search');
         assert.equal(element._getRunButtonText(true, false), 'Please Return to Search Page to Run Saved Search');
         assert.equal(element._getRunButtonText(false, false), 'Run Saved Search');
-        assert.equal(element._getRunButtonText(false, true), 'Run Saved Search (New Results Available)');
+        assert.equal(element._getRunButtonText(false, true), 'Run Saved Search (New Data Available)');
       });
 
       test('_getSettingsButtonStyleClass does return as expected', function() {
@@ -435,7 +464,7 @@ limitations under the License.
         assert.equal(element._getSettingsButtonText(false), 'Open User Settings');
       });
 
-      test('_getTermsDisplayCollection does a new object using buildSearchTermsFunction', function() {
+      test('_getTermsDisplayCollection does a new object using buildPopupDataFunction', function() {
         assert.deepEqual(element._getTermsDisplayCollection(''), {});
 
         assert.deepEqual(element._getTermsDisplayCollection('{}'), {});
@@ -456,17 +485,24 @@ limitations under the License.
         assert.deepEqual(element._getTermsDisplayCollection('{\"x\":[1]}'), {});
       });
 
+      test('_getViewButtonStyleClass does return as expected', function() {
+        assert.equal(element._getViewButtonStyleClass(true, false), 'add-highlight');
+        assert.equal(element._getViewButtonStyleClass(true, true), '');
+        assert.equal(element._getViewButtonStyleClass(false, false), '');
+        assert.equal(element._getViewButtonStyleClass(false, true), '');
+      });
+
       test('_openDeleteCaseDialog does open the delete dialog and set _deleteCaseIndex', function() {
         element.cases = [{
           name: 'case1',
-          searches: [{
+          searchList: [{
             uiState: '{\"key1\":\"value1\"}'
           }, {
             uiState: '{\"key2\":\"value2\"}'
           }]
         }, {
           name: 'case2',
-          searches: [{
+          searchList: [{
             uiState: '{\"key3\":\"value3\"}'
           }, {
             uiState: '{\"key4\":\"value4\"}'
@@ -486,24 +522,8 @@ limitations under the License.
         assert.isTrue(deleteDialog.opened);
       });
 
-      test('_openDeleteSearchDialog does open the delete dialog and set _deleteCaseIndex and _deleteSearchIndex', function() {
-        element.cases = [{
-          name: 'case1',
-          searches: [{
-            uiState: '{\"key1\":\"value1\"}'
-          }, {
-            uiState: '{\"key2\":\"value2\"}'
-          }]
-        }, {
-          name: 'case2',
-          searches: [{
-            uiState: '{\"key3\":\"value3\"}'
-          }, {
-            uiState: '{\"key4\":\"value4\"}'
-          }]
-        }];
-
-        element._openDeleteSearchDialog({
+      test('_openDeleteCaseDataDialog with search index does open the delete dialog and set properties', function() {
+        element._openDeleteCaseDataDialog({
           model: {
             caseIndex: 0,
             searchIndex: 1
@@ -511,11 +531,66 @@ limitations under the License.
         });
 
         assert.equal(element._deleteCaseIndex, 0);
-        assert.equal(element._deleteSearchIndex, 1);
+        assert.equal(element._deleteCaseDataArray, 'searchList');
+        assert.equal(element._deleteCaseDataIndex, 1);
+        assert.equal(element._deleteCaseDataLabel, 'search');
 
-        var deleteDialog = element.$$('#deleteSearchDialog');
+        var deleteDialog = element.$$('#deleteCaseDataDialog');
         assert(deleteDialog);
         assert.isTrue(deleteDialog.opened);
+      });
+
+      test('_openDeleteCaseDataDialog with entity index does open the delete dialog and set properties', function() {
+        element.entityConfig = {
+          testType: {
+            name: 'Test Type'
+          }
+        };
+
+        element._openDeleteCaseDataDialog({
+          model: {
+            caseIndex: 0,
+            entity: {
+              type: 'testType'
+            },
+            entityIndex: 1
+          }
+        });
+
+        assert.equal(element._deleteCaseIndex, 0);
+        assert.equal(element._deleteCaseDataArray, 'entityList');
+        assert.equal(element._deleteCaseDataIndex, 1);
+        assert.equal(element._deleteCaseDataLabel, 'test type');
+
+        var deleteDialog = element.$$('#deleteCaseDataDialog');
+        assert(deleteDialog);
+        assert.isTrue(deleteDialog.opened);
+      });
+
+      test('_openDeleteCaseDataDialog with document index does open the delete dialog and set properties', function() {
+        element._openDeleteCaseDataDialog({
+          model: {
+            caseIndex: 0,
+            documentIndex: 1
+          }
+        });
+
+        assert.equal(element._deleteCaseIndex, 0);
+        assert.equal(element._deleteCaseDataArray, 'documentList');
+        assert.equal(element._deleteCaseDataIndex, 1);
+        assert.equal(element._deleteCaseDataLabel, 'document');
+
+        var deleteDialog = element.$$('#deleteCaseDataDialog');
+        assert(deleteDialog);
+        assert.isTrue(deleteDialog.opened);
+      });
+
+      test('_openPage with entity index does open the entity page', function() {
+        // TODO
+      });
+
+      test('_openPage with document index does open the document page', function() {
+        // TODO
       });
 
       test('_openSettingsDialog does open the settings dialog', function() {
@@ -528,7 +603,7 @@ limitations under the License.
       test('_runSearch does set the notificationDate and searchParameters and does close the settings dialog', function() {
         element.cases = [{
           name: 'case1',
-          searches: [{
+          searchList: [{
             lastViewedByUser: new Date('September 01, 2017'),
             notify: true,
             uiState: '{}'
@@ -539,7 +614,7 @@ limitations under the License.
           }]
         }, {
           name: 'case2',
-          searches: [{
+          searchList: [{
             lastViewedByUser: new Date('September 03, 2017'),
             notify: true,
             uiState: '{}'
@@ -557,21 +632,21 @@ limitations under the License.
           }
         });
 
-        assert.typeOf(element.cases[0].searches[1].lastViewedByUser, 'date');
-        assert.notEqual(element.cases[0].searches[1].lastViewedByUser, new Date('September 02, 2017'));
-        assert.isFalse(element.cases[0].searches[1].notify);
+        assert.typeOf(element.cases[0].searchList[1].lastViewedByUser, 'date');
+        assert.notEqual(element.cases[0].searchList[1].lastViewedByUser, new Date('September 02, 2017'));
+        assert.isFalse(element.cases[0].searchList[1].notify);
 
-        assert.deepEqual(element.cases[0].searches[0], {
+        assert.deepEqual(element.cases[0].searchList[0], {
           lastViewedByUser: new Date('September 01, 2017'),
           notify: true,
           uiState: '{}'
         });
-        assert.deepEqual(element.cases[1].searches[0], {
+        assert.deepEqual(element.cases[1].searchList[0], {
           lastViewedByUser: new Date('September 03, 2017'),
           notify: true,
           uiState: '{}'
         });
-        assert.deepEqual(element.cases[1].searches[1], {
+        assert.deepEqual(element.cases[1].searchList[1], {
           lastViewedByUser: new Date('September 04, 2017'),
           notify: true,
           uiState: '{}'
@@ -597,7 +672,7 @@ limitations under the License.
 
       test('_runSearch does not set the notificationDate if notify is false', function() {
         element.cases = [{
-          searches: [{
+          searchList: [{
             lastViewedByUser: new Date('September 01, 2017'),
             notify: false,
             uiState: '{\"a\":[1],\"b\":[2,3]}'
@@ -611,9 +686,9 @@ limitations under the License.
           }
         });
 
-        assert.typeOf(element.cases[0].searches[0].lastViewedByUser, 'date');
-        assert.notEqual(element.cases[0].searches[0].lastViewedByUser, new Date('September 01, 2017'));
-        assert.isFalse(element.cases[0].searches[0].notify);
+        assert.typeOf(element.cases[0].searchList[0].lastViewedByUser, 'date');
+        assert.notEqual(element.cases[0].searchList[0].lastViewedByUser, new Date('September 01, 2017'));
+        assert.isFalse(element.cases[0].searchList[0].notify);
 
         assert.isNull(element.notificationDate);
         assert.isFalse(element.notifications);
@@ -634,7 +709,7 @@ limitations under the License.
 
       test('_runSearch does not set the notificationDate if notify is undefined', function() {
         element.cases = [{
-          searches: [{
+          searchList: [{
             lastViewedByUser: new Date('September 01, 2017'),
             notify: undefined,
             uiState: '{\"a\":[1],\"b\":[2,3]}'
@@ -648,9 +723,9 @@ limitations under the License.
           }
         });
 
-        assert.typeOf(element.cases[0].searches[0].lastViewedByUser, 'date');
-        assert.notEqual(element.cases[0].searches[0].lastViewedByUser, new Date('September 01, 2017'));
-        assert.isUndefined(element.cases[0].searches[0].notify);
+        assert.typeOf(element.cases[0].searchList[0].lastViewedByUser, 'date');
+        assert.notEqual(element.cases[0].searchList[0].lastViewedByUser, new Date('September 01, 2017'));
+        assert.isUndefined(element.cases[0].searchList[0].notify);
 
         assert.isNull(element.notificationDate);
         assert.isFalse(element.notifications);
@@ -686,7 +761,7 @@ limitations under the License.
 
       test('_toggleEmailAlert does update search object', function() {
         element.cases = [{
-          searches: [],
+          searchList: [],
           sendEmailAlert: false
         }];
 
@@ -714,7 +789,7 @@ limitations under the License.
 
       test('_updateNotifications does update notifications', function() {
         element.cases = [{
-          searches: [{
+          searchList: [{
             notify: true
           }]
         }];
@@ -722,7 +797,7 @@ limitations under the License.
         assert.isTrue(element.notifications);
 
         element.cases = [{
-          searches: [{
+          searchList: [{
             notify: false
           }]
         }];
@@ -730,7 +805,7 @@ limitations under the License.
         assert.isFalse(element.notifications);
 
         element.cases = [{
-          searches: [{
+          searchList: [{
             notify: false
           }, {
             notify: true
@@ -740,11 +815,11 @@ limitations under the License.
         assert.isTrue(element.notifications);
 
         element.cases = [{
-          searches: [{
+          searchList: [{
             notify: false
           }]
         }, {
-          searches: [{
+          searchList: [{
             notify: false
           }]
         }];
@@ -752,11 +827,11 @@ limitations under the License.
         assert.isFalse(element.notifications);
 
         element.cases = [{
-          searches: [{
+          searchList: [{
             notify: false
           }]
         }, {
-          searches: [{
+          searchList: [{
             notify: true
           }]
         }];
@@ -764,7 +839,7 @@ limitations under the License.
         assert.isTrue(element.notifications);
 
         element.cases = [{
-          searches: [{
+          searchList: [{
             notify: undefined
           }]
         }];
@@ -774,7 +849,7 @@ limitations under the License.
 
       test('_updateNotificationDate does update notificationDate and cases', function() {
         element.cases = [{
-          searches: [{
+          searchList: [{
             lastViewedByUser: new Date('September 01, 2017'),
             notify: true
           }, {
@@ -782,7 +857,7 @@ limitations under the License.
             notify: true
           }]
         }, {
-          searches: [{
+          searchList: [{
             lastViewedByUser: new Date('September 03, 2017'),
             notify: true
           }, {
@@ -791,23 +866,23 @@ limitations under the License.
           }]
         }];
 
-        element._updateNotificationDate(0, 1);
+        element._updateNotificationDate(0, 'searchList', 1);
 
         assert.deepEqual(element.notificationDate, new Date('September 02, 2017'));
 
-        assert.typeOf(element.cases[0].searches[1].lastViewedByUser, 'date');
-        assert.notEqual(element.cases[0].searches[1].lastViewedByUser, new Date('September 02, 2017'));
-        assert.isFalse(element.cases[0].searches[1].notify);
+        assert.typeOf(element.cases[0].searchList[1].lastViewedByUser, 'date');
+        assert.notEqual(element.cases[0].searchList[1].lastViewedByUser, new Date('September 02, 2017'));
+        assert.isFalse(element.cases[0].searchList[1].notify);
 
-        assert.deepEqual(element.cases[0].searches[0], {
+        assert.deepEqual(element.cases[0].searchList[0], {
           lastViewedByUser: new Date('September 01, 2017'),
           notify: true
         });
-        assert.deepEqual(element.cases[1].searches[0], {
+        assert.deepEqual(element.cases[1].searchList[0], {
           lastViewedByUser: new Date('September 03, 2017'),
           notify: true
         });
-        assert.deepEqual(element.cases[1].searches[1], {
+        assert.deepEqual(element.cases[1].searchList[1], {
           lastViewedByUser: new Date('September 04, 2017'),
           notify: true
         });
@@ -817,45 +892,45 @@ limitations under the License.
         element.notificationDate = new Date('September 01, 2017');
 
         element.cases = [{
-          searches: [{
+          searchList: [{
             lastViewedByUser: new Date('September 02, 2017'),
             notify: false
           }]
         }];
 
-        element._updateNotificationDate(0, 0);
+        element._updateNotificationDate(0, 'searchList', 0);
 
         assert.isNull(element.notificationDate);
 
-        assert.typeOf(element.cases[0].searches[0].lastViewedByUser, 'date');
-        assert.notEqual(element.cases[0].searches[0].lastViewedByUser, new Date('September 02, 2017'));
-        assert.isFalse(element.cases[0].searches[0].notify);
+        assert.typeOf(element.cases[0].searchList[0].lastViewedByUser, 'date');
+        assert.notEqual(element.cases[0].searchList[0].lastViewedByUser, new Date('September 02, 2017'));
+        assert.isFalse(element.cases[0].searchList[0].notify);
       });
 
       test('_updateNotificationDate does set notificationDate to null if notify is undefined', function() {
         element.notificationDate = new Date('September 01, 2017');
 
         element.cases = [{
-          searches: [{
+          searchList: [{
             lastViewedByUser: new Date('September 02, 2017'),
             notify: undefined
           }]
         }];
 
-        element._updateNotificationDate(0, 0);
+        element._updateNotificationDate(0, 'searchList', 0);
 
         assert.isNull(element.notificationDate);
 
-        assert.typeOf(element.cases[0].searches[0].lastViewedByUser, 'date');
-        assert.notEqual(element.cases[0].searches[0].lastViewedByUser, new Date('September 02, 2017'));
-        assert.isUndefined(element.cases[0].searches[0].notify);
+        assert.typeOf(element.cases[0].searchList[0].lastViewedByUser, 'date');
+        assert.notEqual(element.cases[0].searchList[0].lastViewedByUser, new Date('September 02, 2017'));
+        assert.isUndefined(element.cases[0].searchList[0].notify);
       });
 
       test('setting cases does update notifications', function() {
         assert.isFalse(element.notifications);
 
         element.cases = [{
-          searches: [{
+          searchList: [{
             notify: true
           }]
         }];

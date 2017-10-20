@@ -28,17 +28,7 @@ limitations under the License.
       (function(document) {
         var demo = document.querySelector('dom-bind');
 
-        demo.buildSearchStateFunction = function(state) {
-          return {
-            date: state.date || [],
-            fieldA: state.fieldA || [],
-            fieldB: state.fieldB || [],
-            fieldC: state.fieldC || [],
-            fieldD: state.fieldD || []
-          };
-        };
-
-        demo.buildSearchTermsFunction = function(state) {
+        demo.buildPopupDataFunction = function(state) {
           return {
             'Start Date': state.date && state.date.length === 2 && state.date[0] ? [state.date[0]] : [],
             'End Date': state.date && state.date.length === 2 && state.date[1] ? [state.date[1]] : [],
@@ -49,7 +39,17 @@ limitations under the License.
           };
         };
 
-        demo.resetSearchDatesFunction = function(state, start, end) {
+        demo.buildStateDataFunction = function(state) {
+          return {
+            date: state.date || [],
+            fieldA: state.fieldA || [],
+            fieldB: state.fieldB || [],
+            fieldC: state.fieldC || [],
+            fieldD: state.fieldD || []
+          };
+        };
+
+        demo.resetDatesDataFunction = function(state, start, end) {
           return {
             date: (start || end) ? [start, end] : state.date,
             fieldA: state.fieldA,
@@ -61,11 +61,15 @@ limitations under the License.
 
         demo.cases = [{
           name: 'Case #1',
-          searches: [],
+          documentList: [],
+          entityList: [],
+          searchList: [],
           sendEmailAlert: false
         }, {
           name: 'Case #2',
-          searches: [{
+          documentList: [],
+          entityList: [],
+          searchList: [{
             lastAutomatedRun: new Date('01-05-2017'),
             lastViewedByUser: new Date('01-01-2017'),
             notify: false,
@@ -74,7 +78,16 @@ limitations under the License.
           sendEmailAlert: false
         }, {
           name: 'Case #3',
-          searches: [{
+          documentList: [{
+            id: 'document1',
+            name: 'Document #1'
+          }],
+          entityList: [{
+            id: 'entity1',
+            name: 'Entity #1',
+            type: 'type1'
+          }],
+          searchList: [{
             lastAutomatedRun: new Date('01-05-2017'),
             lastViewedByUser: new Date('01-02-2017'),
             notify: true,
@@ -83,7 +96,23 @@ limitations under the License.
           sendEmailAlert: true
         }, {
           name: 'Case #4',
-          searches: [{
+          documentList: [{
+            id: 'document2',
+            name: 'Document #2'
+          }, {
+            id: 'document3',
+            name: 'Document #3'
+          }],
+          entityList: [{
+            id: 'entity2',
+            name: 'Entity #2',
+            type: 'type2'
+          }, {
+            id: 'entity3',
+            name: 'Entity #3',
+            type: 'type3'
+          }],
+          searchList: [{
             lastAutomatedRun: new Date('01-05-2017'),
             lastViewedByUser: new Date('01-03-2017'),
             notify: false,
@@ -97,6 +126,31 @@ limitations under the License.
           sendEmailAlert: true
         }];
 
+        demo.linkFunction = function(id) {
+          return 'http://' + id;
+        };
+
+        demo.entityConfig = {
+          type1: {
+            icon: 'bookmark',
+            link: demo.linkFunction,
+            name: 'Type #1',
+            styleClass: 'class1'
+          },
+          type2: {
+            icon: 'favorite',
+            link: demo.linkFunction,
+            name: 'Type #2',
+            styleClass: 'class2'
+          },
+          type3: {
+            icon: 'star',
+            link: demo.linkFunction,
+            name: 'Type #3',
+            styleClass: 'class3'
+          }
+        };
+
         demo.stringify = function(object) {
           return JSON.stringify(object);
         };
@@ -107,11 +161,17 @@ limitations under the License.
       <h3>Input</h3>
       <p>Username: demo_user</p>
       <p>User Id: 1234</p>
-      <p>Show Search: true</p>
+      <p>Enable Search: true</p>
       <p>Cases: [[stringify(cases)]]</p>
-      <p>Build Search State Function: [[buildSearchStateFunction]]</p>
-      <p>Build Search Terms Function: [[buildSearchTermsFunction]]</p>
-      <p>Reset Search Dates Function: [[resetSearchDatesFunction]]</p>
+      <p>Document Icon: assignment</p>
+      <p>Document Link Function: [[linkFunction]]</p>
+      <p>Document Style Class: document-style-class</p>
+      <p>Document Type Plural: Webpages</p>
+      <p>Document Type Singular: Webpage</p>
+      <p>Entity Config: [[stringify(entityConfig)]]</p>
+      <p>Build Popup Data Function: [[buildPopupDataFunction]]</p>
+      <p>Build State Data Function: [[buildStateDataFunction]]</p>
+      <p>Reset Dates Data Function: [[resetDatesDataFunction]]</p>
 
       <h3>Output</h3>
       <p>Search Parameters: [[stringify(searchParameters)]]<p>
@@ -124,11 +184,18 @@ limitations under the License.
       <h3>Element</h3>
 
       <user-settings-dialog
-        build-search-state-function="[[buildSearchStateFunction]]"
-        build-search-terms-function="[[buildSearchTermsFunction]]"
-        reset-search-dates-function="[[resetSearchDatesFunction]]"
-        show-search
+        build-popup-data-function="[[buildPopupDataFunction]]"
+        build-state-data-function="[[buildStateDataFunction]]"
+        reset-dates-data-function="[[resetDatesDataFunction]]"
+        enable-email-address
+        enable-search
         cases="[[cases]]"
+        document-icon="assignment"
+        document-link-function="[[linkFunction]]"
+        document-style-class="document-style-class"
+        document-type-plural="Webpages"
+        document-type-singular="Webpage"
+        entity-config="[[entityConfig]]"
         user-id="1234"
         username="demo_user"
         blur-images="{{blurImages}}"

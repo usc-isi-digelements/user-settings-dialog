@@ -17,8 +17,8 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../button-action/button-action.html">
 <link rel="import" href="../fontawesome-iconset/fa-all.html">
-<link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/social-icons.html">
 <link rel="import" href="../lodash-import/lodash.html">
@@ -39,14 +39,14 @@ A Polymer Element showing a button that opens a dialog with user settings.
 
 ### Example
 ```js
-demo.buildSearchStateFunction = function(state) {
+var buildStateDataFunction = function(state) {
   return {
     date: state.date || [],
     list: state.list || []
   };
 };
 
-demo.buildSearchTermsFunction = function(state) {
+var buildPopupDataFunction = function(state) {
   return {
     'Start': state.date && state.date.length === 2 && state.date[0] ? [state.date[0]] : [],
     'End': state.date && state.date.length === 2 && state.date[1] ? [state.date[1]] : [],
@@ -54,59 +54,120 @@ demo.buildSearchTermsFunction = function(state) {
   };
 };
 
-demo.resetSearchDatesFunction = function(state, start, end) {
+var resetDatesDataFunction = function(state, start, end) {
   return {
     date: (start || end) ? [start, end] : state.date,
     list: state.list
   };
 };
 
-demo.cases = [{
+var cases = [{
   name: 'Case #1',
-  searches: [],
+  documentList: [],
+  entityList: [],
+  searchList: [],
   sendEmailAlert: false
 }, {
   name: 'Case #2',
-  searches: [{
+  documentList: [],
+  entityList: [],
+  searchList: [{
     lastAutomatedRun: new Date('01-05-2017'),
     lastViewedByUser: new Date('01-01-2017'),
     notify: false,
-    uiState: '{\"list\": [\"item1\"]}'
+    uiState: '{\"fieldA\": [\"value0\"]}'
   }],
   sendEmailAlert: false
 }, {
   name: 'Case #3',
-  searches: [{
+  documentList: [{
+    id: 'document1',
+    name: 'Document #1'
+  }],
+  entityList: [{
+    id: 'entity1',
+    name: 'Entity #1',
+    type: 'type1'
+  }],
+  searchList: [{
     lastAutomatedRun: new Date('01-05-2017'),
     lastViewedByUser: new Date('01-02-2017'),
     notify: true,
-    uiState: '{\"list\": [\"item1\", \"item2\"]}'
+    uiState: '{\"date\": [\"01-01-2017\", null], \"fieldB\": [\"value1\"], \"fieldC\": [\"value2\"], \"fieldD\": [\"value3\"]}'
   }],
   sendEmailAlert: true
 }, {
   name: 'Case #4',
-  searches: [{
+  documentList: [{
+    id: 'document2',
+    name: 'Document #2'
+  }, {
+    id: 'document3',
+    name: 'Document #3'
+  }],
+  entityList: [{
+    id: 'entity2',
+    name: 'Entity #2',
+    type: 'type2'
+  }, {
+    id: 'entity3',
+    name: 'Entity #3',
+    type: 'type3'
+  }],
+  searchList: [{
     lastAutomatedRun: new Date('01-05-2017'),
     lastViewedByUser: new Date('01-03-2017'),
     notify: false,
-    uiState: '{\"date\": [\"01-01-2017\", null], \"list\": [\"item3\", \"item4\"]}'
+    uiState: '{\"fieldA\": [\"value4\"], \"fieldB\": [\"value5\"]}'
   }, {
     lastAutomatedRun: new Date('01-05-2017'),
     lastViewedByUser: new Date('01-04-2017'),
     notify: true,
-    uiState: '{\"date\": [\"01-02-2017\", \"01-03-2017\"], \"list\": [\"item5\", \"item6\"]}'
+    uiState: '{\"date\": [\"01-01-2017\", \"01-29-2017\"], \"fieldC\": [\"value6\", \"value7\"], \"fieldD\": [\"value8\", \"value9\"]}'
   }],
   sendEmailAlert: true
 }];
+
+var linkFunction = function(id) {
+  return 'http://' + id;
+};
+
+var entityConfig = {
+  type1: {
+    icon: 'bookmark',
+    link: linkFunction,
+    name: 'Type #1',
+    styleClass: 'class1'
+  },
+  type2: {
+    icon: 'favorite',
+    link: linkFunction,
+    name: 'Type #2',
+    styleClass: 'class2'
+  },
+  type3: {
+    icon: 'star',
+    link: linkFunction,
+    name: 'Type #3',
+    styleClass: 'class3'
+  }
+};
 ```
 
 ```html
 <user-settings-dialog
-  build-search-state-function="[[buildSearchStateFunction]]"
-  build-search-terms-function="[[buildSearchTermsFunction]]"
-  reset-search-dates-function="[[resetSearchDatesFunction]]"
-  show-search
+  build-state-data-function="[[buildStateDataFunction]]"
+  build-terms-data-function="[[buildPopupDataFunction]]"
+  reset-dates-data-function="[[resetDatesDataFunction]]"
+  enable-email-address
+  enable-search
   cases="[[cases]]"
+  document-icon="assignment"
+  document-link-function="[[linkFunction]]"
+  document-style-class="document-style-class"
+  document-type-plural="Webpages"
+  document-type-singular="Webpage"
+  entity-config="[[entityConfig]]"
   user-id="1234"
   username="demo_user"
   blur-images="{{blurImages}}"
@@ -130,16 +191,27 @@ demo.cases = [{
         display: inline-block;
       }
 
-      paper-icon-button {
-        border-radius: 50%;
-        padding: 5px;
-        min-width: 40px;
+      iron-icon {
+        height: 20px;
+        width: 20px;
+        min-width: 20px;
+        margin-right: 10px;
       }
 
-      .little-button {
+      paper-icon-button {
+        border-radius: 50%;
         height: 30px;
         width: 30px;
         min-width: 30px;
+        margin-right: 10px;
+        padding: 5px;
+      }
+
+      #settingsButton {
+        height: 40px;
+        width: 40px;
+        min-width: 40px;
+        margin-right: 0;
       }
 
       .add-highlight {
@@ -152,10 +224,6 @@ demo.cases = [{
 
       .notification-button.active {
         color: var(--primary-text-color);
-      }
-
-      .cases > div {
-        margin: 0 0 10px 10px;
       }
 
       .case-item {
@@ -172,11 +240,18 @@ demo.cases = [{
         border-color: var(--secondary-text-color);
       }
 
-      .search-info {
-        margin-left: 100px;
+      .case-name {
+        color: var(--primary-text-color);
+        font-weight: 500;
       }
 
-      .search-item {
+      .case-data-info {
+        margin-left: 80px;
+        margin-top: 5px;
+      }
+
+      .case-data-item {
+        margin-bottom: 10px;
         margin-top: 10px;
       }
 
@@ -211,14 +286,18 @@ demo.cases = [{
         cursor: pointer;
       }
 
-      .set-width: {
-        width: 245px;
+      .set-width {
+        width: 200px;
+      }
+
+      button-action {
+        margin: 10px 10px 0 10px;
       }
     </style>
 
     <paper-icon-button
       id="settingsButton"
-      class$="[[_getSettingsButtonStyleClass(showSearch, notifications)]]"
+      class$="[[_getSettingsButtonStyleClass(enableSearch, notifications)]]"
       icon="fa:cog"
       title$="[[_getSettingsButtonText(notifications)]]"
       on-tap="_openSettingsDialog">
@@ -228,7 +307,7 @@ demo.cases = [{
       <div class="layout horizontal center">
         <div class="start-justified flex">
           <template is="dom-if" if="[[!userLoading]]">
-            <span class="styled-dialog-name styled-dialog-right-space">Logged in as:</span>
+            <span class="styled-dialog-name styled-dialog-right-space">Logged in as</span>
             <span class="styled-dialog-text styled-dialog-right-space">[[username]]</span>
           </template>
           <template is="dom-if" if="[[userLoading]]">
@@ -236,27 +315,32 @@ demo.cases = [{
           </template>
         </div>
         <div class="end-justified">
-          <span class="styled-dialog-name styled-dialog-right-space">DIG Version:</span>
+          <span class="styled-dialog-name styled-dialog-right-space">DIG Version</span>
           <span class="styled-dialog-text styled-dialog-right-space">DIG_VERSION</span>
         </div>
       </div>
 
       <div class="styled-dialog-divider"></div>
 
+      <template is="dom-if" if="[[!userId]]">
+      </template>
+
       <template is="dom-if" if="[[userId]]" restamp="true">
         <div class="layout horizontal center">
-          <paper-icon-button class="little-button styled-dialog-right-space" icon="[[_getCheckboxIcon(blurImages, userId)]]" title="Toggle Blur Images" on-tap="_toggleBlur"></paper-icon-button>
+          <paper-icon-button icon="[[_getCheckboxIcon(blurImages, userId)]]" title="Toggle Blur Images" on-tap="_toggleBlur"></paper-icon-button>
           <span class="pointer styled-dialog-text styled-dialog-right-space" on-tap="_toggleBlur">Blur Images</span>
         </div>
 
-        <div class="layout horizontal center">
-          <span class="set-width styled-dialog-name styled-dialog-right-space">Email Address for Notifications:</span>
-          <paper-input class="styled-dialog-right-space" label="Enter Email Address" value="{{_emailInput}}" no-label-float type="email" auto-validate invalid="{{_isEmailInvalid}}"></paper-input>
-          <paper-icon-button class="little-button styled-dialog-right-space" disabled="[[_getEmailAddressButtonIsDisabled(_emailInput, _isEmailInvalid)]]" icon="fa:floppy-o" title="Save Email Address" on-tap="_saveEmailAddress"></paper-icon-button>
-        </div>
+        <template is="dom-if" if="[[enableEmailAddress]]">
+          <div class="layout horizontal center">
+            <span class="set-width styled-dialog-name styled-dialog-right-space">Email Address for Alerts</span>
+            <paper-input class="styled-dialog-right-space" label="Enter Email Address" value="{{_emailInput}}" no-label-float type="email" auto-validate invalid="{{_isEmailInvalid}}"></paper-input>
+            <paper-icon-button disabled="[[_getEmailAddressButtonIsDisabled(_emailInput, _isEmailInvalid)]]" icon="fa:floppy-o" title="Save Email Address" on-tap="_saveEmailAddress"></paper-icon-button>
+          </div>
+        </template>
 
         <div class="layout horizontal center">
-          <span class="set-width styled-dialog-name styled-dialog-right-space">Check Searches for New Results:</span>
+          <span class="set-width styled-dialog-name styled-dialog-right-space">Check Cases for New Data</span>
           <paper-dropdown-menu class="styled-dialog-right-space" label="Interval" no-label-float>
             <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{notificationInterval}}">
               <paper-item value="never">Never</paper-item>
@@ -264,68 +348,58 @@ demo.cases = [{
               <paper-item value="weekly">Every Week</paper-item>
             </paper-listbox>
           </paper-dropdown-menu>
-          <paper-icon-button class="little-button styled-dialog-right-space" icon="fa:question-circle" title="Click for More Information" on-tap="_toggleNotificationHelp"></paper-icon-button>
         </div>
-
-        <iron-collapse id="notificationHelp">
-          <span>DIG can automatically run one or more of your saved searches every day or week and notify you if any of those searches have new results.  Select the interval to run your searches above, then select which searches you want to be checked for new results in your list of saved searches below.</span>
-        </iron-collapse>
 
         <div class="styled-dialog-divider"></div>
 
-        <div class="styled-dialog-name">Saved Cases and Searches</div>
+        <div class="styled-dialog-name">Saved Cases</div>
 
-        <div class="layout vertical cases">
+        <div class="layout vertical case-list">
           <template is="dom-if" if="[[cases]]">
             <template is="dom-repeat" items="[[cases]]" as="case" index-as="caseIndex">
               <div class="layout vertical case-item">
                 <div class="layout horizontal center case-info">
                   <paper-icon-button
-                    class$="styled-dialog-right-space notification-button [[_getNotificationButtonStyleClass(notificationInterval, case.sendEmailAlert)]]"
+                    class$="notification-button [[_getNotificationButtonStyleClass(notificationInterval, case.sendEmailAlert)]]"
                     icon$="[[_getNotificationButtonIcon(notificationInterval, case.sendEmailAlert)]]"
                     title="[[_getNotificationButtonText(notificationInterval, case.sendEmailAlert)]]"
                     on-tap="_toggleEmailAlert">
                   </paper-icon-button>
 
                   <paper-icon-button
-                    class="styled-dialog-right-space delete-button"
                     icon="fa:trash"
                     title="Delete Saved Search"
                     on-tap="_openDeleteCaseDialog">
                   </paper-icon-button>
 
-                  <div class="styled-dialog-name styled-dialog-right-space">Name</div>
-                  <div class="styled-dialog-text styled-dialog-right-space">[[case.name]]</div>
+                  <div class="styled-dialog-name case-name styled-dialog-right-space">[[case.name]]</div>
                 </div>
 
-                <template is="dom-repeat" items="[[case.searches]]" as="search" index-as="searchIndex">
-                  <div class="styled-dialog-divider"></div>
-
-                  <div class="layout vertical search-item">
+                <template is="dom-repeat" items="[[case.searchList]]" as="search" index-as="searchIndex">
+                  <div class="layout vertical case-data-item">
                     <div class="layout horizontal center">
                       <paper-icon-button
                         case$="[[caseIndex]]"
-                        class$="styled-dialog-right-space search-button [[_getRunButtonStyleClass(showSearch, search.notify)]]"
+                        class$="[[_getViewButtonStyleClass(search.notify, !enableSearch)]]"
                         icon="fa:search"
-                        title$="[[_getRunButtonText(showSearch, search.notify)]]"
+                        title$="[[_getRunButtonText(enableSearch, search.notify)]]"
                         on-tap="_runSearch"
-                        disabled="[[!showSearch]]">
+                        disabled="[[!enableSearch]]">
                       </paper-icon-button>
 
                       <paper-icon-button
-                        class="styled-dialog-right-space delete-button"
-                        icon="fa:delete"
+                        icon="fa:trash"
                         title="Delete Saved Search"
-                        on-tap="_openDeleteSearchDialog">
+                        on-tap="_openDeleteCaseDataDialog">
                       </paper-icon-button>
 
                       <terms-display
                         collection="[[_getTermsDisplayCollection(search.uiState)]]"
-                        term-label="Terms">
+                        label="Search Terms">
                       </terms-display>
                     </div>
 
-                    <div class="layout horizontal center search-info styled-dialog-tall">
+                    <div class="layout horizontal center case-data-info">
                       <div class="styled-dialog-note styled-dialog-right-space">You Last Ran on [[_formatDate(search.lastViewedByUser)]]</div>
                       <div class="styled-dialog-right-space"> |</div>
                       <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(search.lastAutomatedRun)]]</div>
@@ -333,11 +407,72 @@ demo.cases = [{
                   </div>
                 </template>
 
-                <template is="dom-if" if="[[!case.searches.length]]">
-                  <div class="styled-dialog-divider"></div>
-                  <div class="styled-dialog-name styled-dialog-tall search-item search-info">No Saved Searches</div>
+                <template is="dom-repeat" items="[[case.entityList]]" as="entity" index-as="entityIndex">
+                  <div class="layout vertical case-data-item">
+                    <div class="layout horizontal center">
+                      <paper-icon-button
+                        case$="[[caseIndex]]"
+                        class$="[[_getViewButtonStyleClass(entity.notify)]]"
+                        icon="fa:external-link-square"
+                        title$="[[_getOpenEntityPageButtonText(entity.notify, entity.type, entityConfig)]]"
+                        on-tap="_openPage">
+                      </paper-icon-button>
+
+                      <paper-icon-button
+                        icon="fa:trash"
+                        title="Delete Saved [[_getProperty(entityConfig, entity.type, 'name')]]"
+                        on-tap="_openDeleteCaseDataDialog">
+                      </paper-icon-button>
+
+                      <iron-icon class$="[[_getProperty(entityConfig, entity.type, 'styleClass')]]" icon="[[_getProperty(entityConfig, entity.type, 'icon')]]"></iron-icon>
+
+                      <div class="styled-dialog-name styled-dialog-right-space">[[_getProperty(entityConfig, entity.type, 'name')]]</div>
+                      <div class="styled-dialog-text">[[entity.name]]</div>
+                    </div>
+
+                    <div class="layout horizontal center case-data-info">
+                      <div class="styled-dialog-note styled-dialog-right-space">You Last Viewed on [[_formatDate(entity.lastViewedByUser)]]</div>
+                      <div class="styled-dialog-right-space"> |</div>
+                      <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(entity.lastAutomatedRun)]]</div>
+                    </div>
+                  </div>
+                </template>
+
+                <template is="dom-repeat" items="[[case.documentList]]" as="document" index-as="documentIndex">
+                  <div class="layout vertical case-data-item">
+                    <div class="layout horizontal center">
+                      <paper-icon-button
+                        case$="[[caseIndex]]"
+                        class$="[[_getViewButtonStyleClass(document.notify)]]"
+                        icon="fa:external-link-square"
+                        title$="[[_getOpenDocumentPageButtonText(document.notify, documentTypeSingular)]]"
+                        on-tap="_openPage">
+                      </paper-icon-button>
+
+                      <paper-icon-button
+                        icon="fa:trash"
+                        title="Delete Saved [[documentTypeSingular]]"
+                        on-tap="_openDeleteCaseDataDialog">
+                      </paper-icon-button>
+
+                      <template is="dom-if" if="[[documentIcon]]">
+                        <iron-icon class$="[[documentStyleClass]]" icon="[[documentIcon]]"></iron-icon>
+                      </template>
+
+                      <div class="styled-dialog-name styled-dialog-right-space">[[documentTypeSingular]]</div>
+                      <div class="styled-dialog-text">[[document.name]]</div>
+                    </div>
+
+                    <div class="layout horizontal center case-data-info">
+                      <div class="styled-dialog-note styled-dialog-right-space">You Last Viewed on [[_formatDate(document.lastViewedByUser)]]</div>
+                      <div class="styled-dialog-right-space"> |</div>
+                      <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(document.lastAutomatedRun)]]</div>
+                    </div>
+                  </div>
                 </template>
               </div>
+
+              <div class="styled-dialog-divider"></div>
             </template>
           </template>
         </div>
@@ -356,11 +491,11 @@ demo.cases = [{
       </div>
     </styled-dialog>
 
-    <styled-dialog id="deleteSearchDialog" modal>
-      <div class="styled-dialog-bold">Are you sure you want to delete this search?</div>
+    <styled-dialog id="deleteCaseDataDialog" modal>
+      <div class="styled-dialog-bold">Are you sure you want to delete this [[_deleteCaseDataLabel]]?</div>
       <div class="layout horizontal center-justified">
-        <button-action dialog-confirm class="styled-dialog-button" text="OK" click-listener="[[_createDeleteSearchListener()]]"></button-action>
-        <button-action dialog-dismiss class="styled-dialog-button" text="Cancel"></button-action>
+        <button-action dialog-confirm text="OK" click-listener="[[_createDeleteCaseDataListener()]]"></button-action>
+        <button-action dialog-dismiss text="Cancel"></button-action>
       </div>
     </styled-dialog>
   </template>
@@ -389,22 +524,23 @@ demo.cases = [{
         /**
          * (Required)
          *
-         * The function to build the `searchParameters` from the saved search state object.  Arguments:  {Object} stateObject
+         * The function to build the terms-display data in the popup using a saved state object.
+         * Must return an object containing fields mapped to arrays of string values.
          *
          * @type {Object}
          */
-        buildSearchStateFunction: {
+        buildPopupDataFunction: {
           type: Object
         },
 
         /**
          * (Required)
          *
-         * The function to build the input for the `terms-display` from the saved search state object.  Arguments:  {Object} stateObject
+         * The function to build the search parameters using a saved state object.
          *
          * @type {Object}
          */
-        buildSearchTermsFunction: {
+        buildStateDataFunction: {
           type: Object
         },
 
@@ -422,6 +558,80 @@ demo.cases = [{
         },
 
         /**
+         * (Optional)
+         *
+         * The document icon (if any).
+         *
+         * @type {String}
+         * @default ''
+         */
+        documentIcon: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * (Required)
+         *
+         * The function to create and return the link for a given document ID.
+         *
+         * @type {Object}
+         */
+        documentLinkFunction: {
+          type: Object
+        },
+
+        /**
+         * (Optional)
+         *
+         * The document style class (if any).
+         *
+         * @type {String}
+         * @default ''
+         */
+        documentStyleClass: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * (Optional)
+         *
+         * The pretty document type string, plural.
+         *
+         * @type {String}
+         * @default 'Documents'
+         */
+        documentTypePlural: {
+          type: String,
+          value: 'Documents'
+        },
+
+        /**
+         * (Optional)
+         *
+         * The pretty document type string, singular.
+         *
+         * @type {String}
+         * @default 'Document'
+         */
+        documentTypeSingular: {
+          type: String,
+          value: 'Document'
+        },
+
+        /**
+         * (Required)
+         *
+         * The config object for the entities in the saved cases containing entity types mapped to objects containing {String} icon, {Function} link, {String} name, and {String} styleClass.
+         *
+         * @type {Object}
+         */
+        entityConfig: {
+          type: Object
+        },
+
+        /**
          * (Optional|Output)
          *
          * The email address for the user.
@@ -432,6 +642,43 @@ demo.cases = [{
           notify: true,
           observer: '_updateEmailInput',
           type: String
+        },
+
+        /**
+         * (Optional)
+         *
+         * Whether to let the user input an email address.
+         *
+         * @type {Boolean}
+         * @default false
+         */
+        enableEmailAddress: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * (Optional)
+         *
+         * Whether to let the user run searches.
+         *
+         * @type {Boolean}
+         * @default false
+         */
+        enableSearch: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * (Required)
+         *
+         * The config object for the entities in the saved cases.
+         *
+         * @type {Object}
+         */
+        entityConfig: {
+          type: Object
         },
 
         /**
@@ -492,7 +739,7 @@ demo.cases = [{
          *
          * @type {Object}
          */
-        resetSearchDatesFunction: {
+        resetDatesDataFunction: {
           type: Object
         },
 
@@ -506,19 +753,6 @@ demo.cases = [{
         searchParameters: {
           notify: true,
           type: Object
-        },
-
-        /**
-         * (Optional)
-         *
-         * Whether to let the user run searches.
-         *
-         * @type {Boolean}
-         * @default false
-         */
-        showSearch: {
-          type: Boolean,
-          value: false
         },
 
         /**
@@ -557,7 +791,7 @@ demo.cases = [{
         },
 
         /**
-         * The index of the case to delete (or the index of the case with a search to delete if `_deleteSearchIndex` is set).
+         * The index of the case to delete (or the index of the case with data to delete if `_deleteCaseDataIndex` is set).
          *
          * @type {Number}
          * @private
@@ -567,13 +801,33 @@ demo.cases = [{
         },
 
         /**
-         * The index of the search to delete (from the case at the index of `_deleteCaseIndex`).
+         * The array (searchList, entityList, documentList) of the data to delete (from the case at the index of `_deleteCaseIndex`).
          *
          * @type {Number}
          * @private
          */
-        _deleteSearchIndex: {
+        _deleteCaseDataArray: {
+          type: String
+        },
+
+        /**
+         * The index of the data to delete (from the case at the index of `_deleteCaseIndex`).
+         *
+         * @type {Number}
+         * @private
+         */
+        _deleteCaseDataIndex: {
           type: Number
+        },
+
+        /**
+         * The label of the data to delete (from the case at the index of `_deleteCaseIndex`).
+         *
+         * @type {Number}
+         * @private
+         */
+        _deleteCaseDataLabel: {
+          type: String
         },
 
         /**
@@ -627,16 +881,16 @@ demo.cases = [{
       },
 
       /**
-       * Returns a `button-action` listener to delete the search at `_deleteSearchIndex` in the case at `_deleteCaseIndex`.
+       * Returns a `button-action` listener to delete the data at `_deleteCaseDataIndex` in the case at `_deleteCaseIndex`.
        *
        * @return {Object}
        * @private
        */
-      _createDeleteSearchListener: function() {
+      _createDeleteCaseDataListener: function() {
         var self = this;
         return {
           onClick: function() {
-            self.splice(['cases', self._deleteCaseIndex, 'searches'], self._deleteSearchIndex, 1);
+            self.splice(['cases', self._deleteCaseIndex, self._deleteCaseDataArray], self._deleteCaseDataIndex, 1);
           }
         };
       },
@@ -651,8 +905,8 @@ demo.cases = [{
        */
       _createSearchParameters: function(stateString, lastViewedByUser) {
         var stateObject = stateString ? JSON.parse(stateString) : {};
-        var searchParameters = this.buildSearchStateFunction ? this.buildSearchStateFunction(stateObject) : undefined;
-        return (searchParameters && this.resetSearchDatesFunction) ? this.resetSearchDatesFunction(searchParameters, this._formatDate(lastViewedByUser)) : searchParameters;
+        var searchParameters = this.buildStateDataFunction ? this.buildStateDataFunction(stateObject) : undefined;
+        return (searchParameters && this.resetDatesDataFunction) ? this.resetDatesDataFunction(searchParameters, this._formatDate(lastViewedByUser)) : searchParameters;
       },
 
       /**
@@ -740,42 +994,69 @@ demo.cases = [{
       },
 
       /**
-       * Returns the style class for the 'run search' button with the given settings.
+       * Returns the text for the 'open document page' button with the given settings.
        *
-       * @param {Boolean} showSearch
        * @param {Boolean} notify
+       * @param {String} type
        * @return {String}
        * @private
        */
-      _getRunButtonStyleClass: function(showSearch, notify) {
-        return showSearch && notify ? 'add-highlight' : '';
+      _getOpenDocumentPageButtonText: function(notify, type) {
+        return 'Open Saved ' + type + (notify ? ' (New Data Available)' : '');
+      },
+
+      /**
+       * Returns the text for the 'open entity page' button with the given settings.
+       *
+       * @param {Boolean} notify
+       * @param {String} type
+       * @param {Object} config
+       * @return {String}
+       * @private
+       */
+      _getOpenEntityPageButtonText: function(notify, type, config) {
+        var string = config && config[type] ? config[type].name : '';
+        return 'Open Saved ' + (string || 'Entity') + (notify ? ' (New Data Available)' : '');
+      },
+
+      /**
+       * Returns the object in the given item at the given nested property.
+       *
+       * @param {Object} item
+       * @param {String} property
+       * @param {String} nestedProperty
+       * @return {Object}
+       * @private
+       */
+      _getProperty: function(item, property, nestedProperty) {
+        return item && item[property] ? item[property][nestedProperty] : undefined;
       },
 
       /**
        * Returns the text for the 'run search' button with the given settings.
        *
-       * @param {Boolean} showSearch
+       * @param {Boolean} enableSearch
        * @param {Boolean} notify
        * @return {String}
        * @private
        */
-      _getRunButtonText: function(showSearch, notify) {
-        if(showSearch) {
+      _getRunButtonText: function(enableSearch, notify) {
+        if(enableSearch) {
           return 'Please Return to Search Page to Run Saved Search';
         }
-        return 'Run Saved Search' + (notify ? ' (New Results Available)' : '');
+        return 'Run Saved Search' + (notify ? ' (New Data Available)' : '');
       },
 
       /**
        * Returns the style class for the settings button with the given settings.
        *
-       * @param {Boolean} showSearch
+       * @param {Boolean} enableSearch
        * @param {Boolean} notifications
        * @return {String}
        * @private
        */
-      _getSettingsButtonStyleClass: function(showSearch, notifications) {
-        return showSearch && notifications ? 'add-highlight' : '';
+      _getSettingsButtonStyleClass: function(enableSearch, notifications) {
+        return enableSearch && notifications ? 'add-highlight' : '';
       },
 
       /**
@@ -798,7 +1079,19 @@ demo.cases = [{
        */
       _getTermsDisplayCollection: function(stateString) {
         var stateObject = stateString ? JSON.parse(stateString) : {};
-        return this.buildSearchTermsFunction ? this.buildSearchTermsFunction(stateObject) : undefined;
+        return this.buildPopupDataFunction ? this.buildPopupDataFunction(stateObject) : undefined;
+      },
+
+      /**
+       * Returns the style class for the 'run search' or 'open page' button with the given settings.
+       *
+       * @param {Boolean} notify
+       * @param {Boolean} disabled
+       * @return {String}
+       * @private
+       */
+      _getViewButtonStyleClass: function(notify, disabled) {
+        return notify && !disabled ? 'add-highlight' : '';
       },
 
       /**
@@ -818,10 +1111,74 @@ demo.cases = [{
        * @param {Event} event
        * @private
        */
-      _openDeleteSearchDialog: function(event) {
-        this._deleteCaseIndex = event.model.caseIndex;
-        this._deleteSearchIndex = event.model.searchIndex;
-        this.$$('#deleteSearchDialog').open();
+      _openDeleteCaseDataDialog: function(event) {
+        var array = '';
+        var index = -1;
+        var label = '';
+
+        if(event.model.searchIndex >= 0) {
+          array = 'searchList';
+          index = event.model.searchIndex;
+          label = 'search';
+        }
+        if(event.model.entityIndex >= 0) {
+          array = 'entityList';
+          index = event.model.entityIndex;
+          label = (this.entityConfig && this.entityConfig[event.model.entity.type] ? this.entityConfig[event.model.entity.type].name : '') || 'entity';
+        }
+        if(event.model.documentIndex >= 0) {
+          array = 'documentList';
+          index = event.model.documentIndex;
+          label = this.documentTypeSingular;
+        }
+
+        if(array && index >= 0) {
+          this._deleteCaseIndex = event.model.caseIndex;
+          this._deleteCaseDataArray = array;
+          this._deleteCaseDataIndex = index;
+          this._deleteCaseDataLabel = label.toLowerCase();
+          this.$$('#deleteCaseDataDialog').open();
+        }
+      },
+
+      /**
+       * Opens the entity or document page in the given event.
+       *
+       * @param {Event} event
+       * @private
+       */
+      _openPage: function(event) {
+        var array = '';
+        var index = -1;
+        var linkFunction = null;
+        var object = null;
+
+        if(event.model.entityIndex >= 0) {
+          array = 'entityList';
+          index = event.model.entityIndex;
+          if(array && index >= 0) {
+            object = this.cases[event.model.caseIndex][array][index];
+            linkFunction = (this.entityConfig && this.entityConfig[object.type] ? this.entityConfig[object.type].link : null);
+          }
+        }
+        if(event.model.documentIndex >= 0) {
+          array = 'documentList';
+          index = event.model.documentIndex;
+          if(array && index >= 0) {
+            object = this.cases[event.model.caseIndex][array][index];
+            linkFunction = this.documentLinkFunction;
+          }
+        }
+
+        if(linkFunction && object.id) {
+          var link = linkFunction(object.id);
+          if(link) {
+            // TODO Add the notification date to the link.
+            this._updateNotificationDate(event.model.caseIndex, array, index);
+            this._updateNotifications();
+            window.open(link, '_blank');
+          }
+        }
       },
 
       /**
@@ -843,10 +1200,10 @@ demo.cases = [{
         this.$$('#settingsDialog').close();
         this.set('processRequest', false);
 
-        this._updateNotificationDate(event.model.caseIndex, event.model.searchIndex);
+        this._updateNotificationDate(event.model.caseIndex, 'searchList', event.model.searchIndex);
 
         this._handlingSearch = true;
-        var search = this.cases[event.model.caseIndex].searches[event.model.searchIndex];
+        var search = this.cases[event.model.caseIndex].searchList[event.model.searchIndex];
         this.set('searchParameters', this._createSearchParameters(search.uiState, this.notificationDate));
         this.set('processRequest', true);
         this._handlingSearch = false;
@@ -886,15 +1243,6 @@ demo.cases = [{
       },
 
       /**
-       * Toggles the notification help text.
-       *
-       * @private
-       */
-      _toggleNotificationHelp: function() {
-        this.$$('#notificationHelp').toggle();
-      },
-
-      /**
        * Updates `_emailInput` using the given email address.
        *
        * @param {String} emailAddress
@@ -911,34 +1259,39 @@ demo.cases = [{
        */
       _updateNotifications: function() {
         this.notifications = this.cases.some(function(caseObject) {
-          return caseObject.searches.some(function(search) {
-            return search.notify;
+          return (caseObject.documentList || []).some(function(item) {
+            return item.notify;
+          }) || (caseObject.entityList || []).some(function(item) {
+            return item.notify;
+          }) || (caseObject.searchList || []).some(function(item) {
+            return item.notify;
           });
         });
       },
 
       /**
-       * Updates the `notificationDate` and the `lastViewedByUser` date and `notify` status of the search at the given index in the case at the given index.
+       * Updates the public `notificationDate` as well as the `lastViewedByUser` date and `notify` status of the object from the given array with the given index in the case with the given index.
        *
        * @param {Number} caseIndex
-       * @param {Number} searchIndex
+       * @param {String} dataArray
+       * @param {Number} dataIndex
        * @private
        */
-      _updateNotificationDate: function(caseIndex, searchIndex) {
-        var search = _.clone(this.cases[caseIndex].searches[searchIndex]);
+      _updateNotificationDate: function(caseIndex, dataArray, dataIndex) {
+        var object = _.clone(this.cases[caseIndex][dataArray][dataIndex]);
 
-        if(search.notify) {
+        if(object.notify) {
           // notification queries have to be sorted in descending order so that newest
           // results are first
-          search.notify = false;
-          this.notificationDate = new Date(search.lastViewedByUser);
+          object.notify = false;
+          this.notificationDate = new Date(object.lastViewedByUser);
         } else {
           // if not a notification query, reset notification flags
           this._deleteNotificationDate();
         }
 
-        search.lastViewedByUser = new Date();
-        this.splice(['cases', caseIndex, 'searches'], searchIndex, 1, search);
+        object.lastViewedByUser = new Date();
+        this.splice(['cases', caseIndex, dataArray], dataIndex, 1, object);
       },
     });
   })();
