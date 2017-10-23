@@ -168,6 +168,7 @@ var entityConfig = {
   document-type-plural="Webpages"
   document-type-singular="Webpage"
   entity-config="[[entityConfig]]"
+  function-config="[[functionConfig]]"
   user-id="1234"
   username="demo_user"
   blur-images="{{blurImages}}"
@@ -479,7 +480,7 @@ var entityConfig = {
                       </paper-icon-button>
 
                       <terms-display
-                        collection="[[_getTermsDisplayCollection(search.uiState)]]"
+                        collection="[[_getTermsDisplayCollection(search.uiState, functionConfig)]]"
                         label="Search Terms">
                       </terms-display>
                     </div>
@@ -767,6 +768,17 @@ var entityConfig = {
         },
 
         /**
+         * (Required to save search)
+         *
+         * The config object for the build function.
+         *
+         * @type {Object}
+         */
+        functionConfig: {
+          type: Object
+        },
+
+        /**
          * (Optional|Output)
          *
          * The network expansion parameters.
@@ -996,13 +1008,14 @@ var entityConfig = {
        * Creates and returns a new object for the searchParameters using the given state.
        *
        * @param {String} stateString
+       * @param {Object} functionConfig
        * @param {Date} lastViewedByUser
        * @return {Object}
        * @private
        */
-      _createSearchParameters: function(stateString, lastViewedByUser) {
+      _createSearchParameters: function(stateString, functionConfig, lastViewedByUser) {
         var stateObject = stateString ? JSON.parse(stateString) : {};
-        var searchParameters = this.buildStateDataFunction && stateObject ? this.buildStateDataFunction(stateObject.search || {}) : undefined;
+        var searchParameters = this.buildStateDataFunction && stateObject ? this.buildStateDataFunction(stateObject.search || {}, functionConfig) : undefined;
         return (searchParameters && this.resetDatesDataFunction) ? this.resetDatesDataFunction(searchParameters, this._formatDate(lastViewedByUser)) : searchParameters;
       },
 
@@ -1171,12 +1184,13 @@ var entityConfig = {
        * Returns the object for the `terms-display` using the given state.
        *
        * @param {String} stateString
+       * @param {Object} functionConfig
        * @return {Object}
        * @private
        */
-      _getTermsDisplayCollection: function(stateString) {
+      _getTermsDisplayCollection: function(stateString, functionConfig) {
         var stateObject = stateString ? JSON.parse(stateString) : {};
-        return this.buildPopupDataFunction && stateObject ? this.buildPopupDataFunction(stateObject.search || {}) : undefined;
+        return this.buildPopupDataFunction && stateObject ? this.buildPopupDataFunction(stateObject.search || {}, functionConfig) : undefined;
       },
 
       /**
@@ -1302,7 +1316,7 @@ var entityConfig = {
         this._handlingSearch = true;
         var search = this.cases[event.model.caseIndex].searchList[event.model.searchIndex];
         this.set('networkExpansionParameters', ((search.uiState ? JSON.parse(search.uiState) : {}).networkExpansion || {}));
-        this.set('searchParameters', this._createSearchParameters(search.uiState, this.notificationDate));
+        this.set('searchParameters', this._createSearchParameters(search.uiState, this.functionConfig, this.notificationDate));
         this.set('processRequest', true);
         this._handlingSearch = false;
 

@@ -351,7 +351,7 @@ limitations under the License.
       });
 
       test('_createSearchParameters does return a new searchParameters object using buildStateDataFunction and resetSearchDateFunction', function() {
-        assert.deepEqual(element._createSearchParameters('{\"search\":{\"a\":[1],\"b\":[2,3]}}', new Date('September 01, 2017')), {
+        assert.deepEqual(element._createSearchParameters('{\"search\":{\"a\":[1],\"b\":[2,3]}}', {}, new Date('September 01, 2017')), {
           a: [1],
           b: [2, 3],
           c: [],
@@ -366,9 +366,25 @@ limitations under the License.
           };
         };
 
-        assert.deepEqual(element._createSearchParameters('{\"startDate\":\"previousDate\"}', new Date('September 01, 2017')), {
+        assert.deepEqual(element._createSearchParameters('{\"search\":{\"startDate\":\"previousDate\"}}', {}, new Date('September 01, 2017')), {
           startDate: 'September 01, 2017'
         });
+      });
+
+      test('_createSearchParameters does use config', function() {
+        var called = false;
+        element.buildStateDataFunction = function(searchParameters, config) {
+          assert.deepEqual(config, {
+            key: 'value'
+          });
+          called = true;
+          return {};
+        };
+
+        element._createSearchParameters('{\"search\":{}}', {
+          key: 'value'
+        }, new Date('September 01, 2017'));
+        assert.isTrue(called);
       });
 
       test('_deleteNotificationDate does not delete the notificationDate if _handlingSearch is true', function() {
@@ -524,6 +540,22 @@ limitations under the License.
         });
 
         assert.deepEqual(element._getTermsDisplayCollection('{\"search\":{\"x\":[1]}}'), {});
+      });
+
+      test('_getTermsDisplayCollection does use config', function() {
+        var called = false;
+        element.buildPopupDataFunction = function(searchParameters, config) {
+          assert.deepEqual(config, {
+            key: 'value'
+          });
+          called = true;
+          return {};
+        };
+
+        element._getTermsDisplayCollection('{}', {
+          key: 'value'
+        });
+        assert.isTrue(called);
       });
 
       test('_getViewButtonStyleClass does return as expected', function() {
