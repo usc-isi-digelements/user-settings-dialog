@@ -139,7 +139,7 @@ limitations under the License.
         element.cases = [{
           name: 'myCase',
           searchList: [{
-            uiState: '{}'
+            uiState: '{\"networkExpansion\":{},\"search\":{}}'
           }],
           sendEmailAlert: false
         }];
@@ -164,7 +164,7 @@ limitations under the License.
         element.cases = [{
           name: 'myCase',
           searchList: [{
-            uiState: '{}'
+            uiState: '{\"networkExpansion\":{},\"search\":{}}'
           }],
           sendEmailAlert: false
         }];
@@ -197,7 +197,7 @@ limitations under the License.
         element.cases = [{
           name: 'myCase',
           searchList: [{
-            uiState: '{}'
+            uiState: '{\"networkExpansion\":{},\"search\":{}}'
           }],
           sendEmailAlert: false
         }];
@@ -220,7 +220,7 @@ limitations under the License.
         element.cases = [{
           name: 'myCase',
           searchList: [{
-            uiState: '{}'
+            uiState: '{\"networkExpansion\":{},\"search\":{}}'
           }],
           sendEmailAlert: false
         }];
@@ -264,16 +264,16 @@ limitations under the License.
         element.cases = [{
           name: 'case1',
           searchList: [{
-            uiState: '{\"key1\":\"value1\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key1\":\"value1\"}}'
           }, {
-            uiState: '{\"key2\":\"value2\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key2\":\"value2\"}}'
           }]
         }, {
           name: 'case2',
           searchList: [{
-            uiState: '{\"key3\":\"value3\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key3\":\"value3\"}}'
           }, {
-            uiState: '{\"key4\":\"value4\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key4\":\"value4\"}}'
           }]
         }];
 
@@ -284,9 +284,9 @@ limitations under the License.
         assert.deepEqual(element.cases, [{
           name: 'case2',
           searchList: [{
-            uiState: '{\"key3\":\"value3\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key3\":\"value3\"}}'
           }, {
-            uiState: '{\"key4\":\"value4\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key4\":\"value4\"}}'
           }]
         }]);
       });
@@ -299,16 +299,16 @@ limitations under the License.
         element.cases = [{
           name: 'case1',
           searchList: [{
-            uiState: '{\"key1\":\"value1\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key1\":\"value1\"}}'
           }, {
-            uiState: '{\"key2\":\"value2\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key2\":\"value2\"}}'
           }]
         }, {
           name: 'case2',
           searchList: [{
-            uiState: '{\"key3\":\"value3\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key3\":\"value3\"}}'
           }, {
-            uiState: '{\"key4\":\"value4\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key4\":\"value4\"}}'
           }]
         }];
 
@@ -321,14 +321,14 @@ limitations under the License.
         assert.deepEqual(element.cases, [{
           name: 'case1',
           searchList: [{
-            uiState: '{\"key2\":\"value2\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key2\":\"value2\"}}'
           }]
         }, {
           name: 'case2',
           searchList: [{
-            uiState: '{\"key3\":\"value3\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key3\":\"value3\"}}'
           }, {
-            uiState: '{\"key4\":\"value4\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key4\":\"value4\"}}'
           }]
         }]);
 
@@ -340,18 +340,18 @@ limitations under the License.
         assert.deepEqual(element.cases, [{
           name: 'case1',
           searchList: [{
-            uiState: '{\"key2\":\"value2\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key2\":\"value2\"}}'
           }]
         }, {
           name: 'case2',
           searchList: [{
-            uiState: '{\"key3\":\"value3\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key3\":\"value3\"}}'
           }]
         }]);
       });
 
       test('_createSearchParameters does return a new searchParameters object using buildStateDataFunction and resetSearchDateFunction', function() {
-        assert.deepEqual(element._createSearchParameters('{\"a\":[1],\"b\":[2,3]}', new Date('September 01, 2017')), {
+        assert.deepEqual(element._createSearchParameters('{\"search\":{\"a\":[1],\"b\":[2,3]}}', new Date('September 01, 2017')), {
           a: [1],
           b: [2, 3],
           c: [],
@@ -442,7 +442,48 @@ limitations under the License.
       });
 
       test('_getProperty does return correctly', function() {
-        // TODO
+        assert.isUndefined(element._getProperty(null, 'a', 'b'));
+        assert.isUndefined(element._getProperty({}, 'a', 'b'));
+        assert.isUndefined(element._getProperty({
+          a: {}
+        }, 'a', 'b'));
+        assert.isUndefined(element._getProperty({
+          b: {}
+        }, 'a', 'b'));
+        assert.equal(element._getProperty({
+          a: {
+            b: 'test'
+          }
+        }, 'a', 'b'), 'test');
+        assert.equal(element._getProperty({
+          a: {
+            b: 1234
+          }
+        }, 'a', 'b'), 1234);
+        assert.isTrue(element._getProperty({
+          a: {
+            b: true
+          }
+        }, 'a', 'b'));
+        assert.isFalse(element._getProperty({
+          a: {
+            b: false
+          }
+        }, 'a', 'b'));
+        assert.deepEqual(element._getProperty({
+          a: {
+            b: ['test']
+          }
+        }, 'a', 'b'), ['test']);
+        assert.deepEqual(element._getProperty({
+          a: {
+            b: {
+              key: 'value'
+            }
+          }
+        }, 'a', 'b'), {
+          key: 'value'
+        });
       });
 
       test('_getRunButtonText does return as expected', function() {
@@ -469,43 +510,43 @@ limitations under the License.
 
         assert.deepEqual(element._getTermsDisplayCollection('{}'), {});
 
-        assert.deepEqual(element._getTermsDisplayCollection('{\"a\":[]}'), {
+        assert.deepEqual(element._getTermsDisplayCollection('{\"search\":{\"a\":[]}}'), {
           x: []
         });
 
-        assert.deepEqual(element._getTermsDisplayCollection('{\"a\":[1]}'), {
+        assert.deepEqual(element._getTermsDisplayCollection('{\"search\":{\"a\":[1]}}'), {
           x: [1]
         });
 
-        assert.deepEqual(element._getTermsDisplayCollection('{\"a\":[1],\"b\":[2,3]}'), {
+        assert.deepEqual(element._getTermsDisplayCollection('{\"search\":{\"a\":[1],\"b\":[2,3]}}'), {
           x: [1],
           y: [2, 3]
         });
 
-        assert.deepEqual(element._getTermsDisplayCollection('{\"x\":[1]}'), {});
+        assert.deepEqual(element._getTermsDisplayCollection('{\"search\":{\"x\":[1]}}'), {});
       });
 
       test('_getViewButtonStyleClass does return as expected', function() {
-        assert.equal(element._getViewButtonStyleClass(true, false), 'add-highlight');
-        assert.equal(element._getViewButtonStyleClass(true, true), '');
-        assert.equal(element._getViewButtonStyleClass(false, false), '');
+        assert.equal(element._getViewButtonStyleClass(true, true), 'add-highlight');
+        assert.equal(element._getViewButtonStyleClass(true, false), '');
         assert.equal(element._getViewButtonStyleClass(false, true), '');
+        assert.equal(element._getViewButtonStyleClass(false, false), '');
       });
 
       test('_openDeleteCaseDialog does open the delete dialog and set _deleteCaseIndex', function() {
         element.cases = [{
           name: 'case1',
           searchList: [{
-            uiState: '{\"key1\":\"value1\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key1\":\"value1\"}}'
           }, {
-            uiState: '{\"key2\":\"value2\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key2\":\"value2\"}}'
           }]
         }, {
           name: 'case2',
           searchList: [{
-            uiState: '{\"key3\":\"value3\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key3\":\"value3\"}}'
           }, {
-            uiState: '{\"key4\":\"value4\"}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key4\":\"value4\"}}'
           }]
         }];
 
@@ -600,28 +641,28 @@ limitations under the License.
         assert.isTrue(settingsDialog.opened);
       });
 
-      test('_runSearch does set the notificationDate and searchParameters and does close the settings dialog', function() {
+      test('_runSearch does set the networkExpansionParameters, notificationDate, and searchParameters and does close the settings dialog', function() {
         element.cases = [{
           name: 'case1',
           searchList: [{
             lastViewedByUser: new Date('September 01, 2017'),
             notify: true,
-            uiState: '{}'
+            uiState: '{\"networkExpansion\":{},\"search\":{}}'
           }, {
             lastViewedByUser: new Date('September 02, 2017'),
             notify: true,
-            uiState: '{\"a\":[1],\"b\":[2,3]}'
+            uiState: '{\"networkExpansion\":{\"a\":true},\"search\":{\"a\":[1],\"b\":[2,3]}}'
           }]
         }, {
           name: 'case2',
           searchList: [{
             lastViewedByUser: new Date('September 03, 2017'),
             notify: true,
-            uiState: '{}'
+            uiState: '{\"networkExpansion\":{},\"search\":{}}'
           }, {
             lastViewedByUser: new Date('September 04, 2017'),
             notify: true,
-            uiState: '{}'
+            uiState: '{\"networkExpansion\":{},\"search\":{}}'
           }]
         }];
 
@@ -639,22 +680,25 @@ limitations under the License.
         assert.deepEqual(element.cases[0].searchList[0], {
           lastViewedByUser: new Date('September 01, 2017'),
           notify: true,
-          uiState: '{}'
+          uiState: '{\"networkExpansion\":{},\"search\":{}}'
         });
         assert.deepEqual(element.cases[1].searchList[0], {
           lastViewedByUser: new Date('September 03, 2017'),
           notify: true,
-          uiState: '{}'
+          uiState: '{\"networkExpansion\":{},\"search\":{}}'
         });
         assert.deepEqual(element.cases[1].searchList[1], {
           lastViewedByUser: new Date('September 04, 2017'),
           notify: true,
-          uiState: '{}'
+          uiState: '{\"networkExpansion\":{},\"search\":{}}'
         });
 
         assert.deepEqual(element.notificationDate, new Date('September 02, 2017'));
         assert.isTrue(element.notifications);
 
+        assert.deepEqual(element.networkExpansionParameters, {
+          a: true
+        });
         assert.deepEqual(element.searchParameters, {
           a: [1],
           b: [2, 3],
@@ -675,7 +719,7 @@ limitations under the License.
           searchList: [{
             lastViewedByUser: new Date('September 01, 2017'),
             notify: false,
-            uiState: '{\"a\":[1],\"b\":[2,3]}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"a\":[1],\"b\":[2,3]}}'
           }]
         }];
 
@@ -712,7 +756,7 @@ limitations under the License.
           searchList: [{
             lastViewedByUser: new Date('September 01, 2017'),
             notify: undefined,
-            uiState: '{\"a\":[1],\"b\":[2,3]}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"a\":[1],\"b\":[2,3]}}'
           }]
         }];
 

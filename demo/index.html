@@ -73,7 +73,7 @@ limitations under the License.
             lastAutomatedRun: new Date('01-05-2017'),
             lastViewedByUser: new Date('01-01-2017'),
             notify: false,
-            uiState: '{\"fieldA\": [\"value0\"]}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"fieldA\": [\"value0\"]}}'
           }],
           sendEmailAlert: false
         }, {
@@ -91,37 +91,41 @@ limitations under the License.
             lastAutomatedRun: new Date('01-05-2017'),
             lastViewedByUser: new Date('01-02-2017'),
             notify: true,
-            uiState: '{\"date\": [\"01-01-2017\", null], \"fieldB\": [\"value1\"], \"fieldC\": [\"value2\"], \"fieldD\": [\"value3\"]}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"date\": [\"01-01-2017\", null], \"fieldB\": [\"value1\"], \"fieldC\": [\"value2\"], \"fieldD\": [\"value3\"]}}'
           }],
           sendEmailAlert: true
         }, {
           name: 'Case #4',
           documentList: [{
             id: 'document2',
-            name: 'Document #2'
+            name: 'Document #2',
+            notify: false
           }, {
             id: 'document3',
-            name: 'Document #3'
+            name: 'Document #3',
+            notify: true
           }],
           entityList: [{
             id: 'entity2',
             name: 'Entity #2',
+            notify: false,
             type: 'type2'
           }, {
             id: 'entity3',
             name: 'Entity #3',
+            notify: true,
             type: 'type3'
           }],
           searchList: [{
             lastAutomatedRun: new Date('01-05-2017'),
             lastViewedByUser: new Date('01-03-2017'),
             notify: false,
-            uiState: '{\"fieldA\": [\"value4\"], \"fieldB\": [\"value5\"]}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"fieldA\": [\"value4\"], \"fieldB\": [\"value5\"]}}'
           }, {
             lastAutomatedRun: new Date('01-05-2017'),
             lastViewedByUser: new Date('01-04-2017'),
             notify: true,
-            uiState: '{\"date\": [\"01-01-2017\", \"01-29-2017\"], \"fieldC\": [\"value6\", \"value7\"], \"fieldD\": [\"value8\", \"value9\"]}'
+            uiState: '{\"networkExpansion\":{},\"search\":{\"date\": [\"01-01-2017\", \"01-29-2017\"], \"fieldC\": [\"value6\", \"value7\"], \"fieldD\": [\"value8\", \"value9\"]}}'
           }],
           sendEmailAlert: true
         }];

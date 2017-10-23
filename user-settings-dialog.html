@@ -75,7 +75,7 @@ var cases = [{
     lastAutomatedRun: new Date('01-05-2017'),
     lastViewedByUser: new Date('01-01-2017'),
     notify: false,
-    uiState: '{\"fieldA\": [\"value0\"]}'
+    uiState: '{\"networkExpansion\":{},\"search\":{\"fieldA\": [\"value0\"]}}'
   }],
   sendEmailAlert: false
 }, {
@@ -93,7 +93,7 @@ var cases = [{
     lastAutomatedRun: new Date('01-05-2017'),
     lastViewedByUser: new Date('01-02-2017'),
     notify: true,
-    uiState: '{\"date\": [\"01-01-2017\", null], \"fieldB\": [\"value1\"], \"fieldC\": [\"value2\"], \"fieldD\": [\"value3\"]}'
+    uiState: '{\"networkExpansion\":{},\"search\":{\"date\": [\"01-01-2017\", null], \"fieldB\": [\"value1\"], \"fieldC\": [\"value2\"], \"fieldD\": [\"value3\"]}}'
   }],
   sendEmailAlert: true
 }, {
@@ -118,12 +118,12 @@ var cases = [{
     lastAutomatedRun: new Date('01-05-2017'),
     lastViewedByUser: new Date('01-03-2017'),
     notify: false,
-    uiState: '{\"fieldA\": [\"value4\"], \"fieldB\": [\"value5\"]}'
+    uiState: '{\"networkExpansion\":{},\"search\":{\"fieldA\": [\"value4\"], \"fieldB\": [\"value5\"]}}'
   }, {
     lastAutomatedRun: new Date('01-05-2017'),
     lastViewedByUser: new Date('01-04-2017'),
     notify: true,
-    uiState: '{\"date\": [\"01-01-2017\", \"01-29-2017\"], \"fieldC\": [\"value6\", \"value7\"], \"fieldD\": [\"value8\", \"value9\"]}'
+    uiState: '{\"networkExpansion\":{},\"search\":{\"date\": [\"01-01-2017\", \"01-29-2017\"], \"fieldC\": [\"value6\", \"value7\"], \"fieldD\": [\"value8\", \"value9\"]}}'
   }],
   sendEmailAlert: true
 }];
@@ -172,6 +172,7 @@ var entityConfig = {
   username="demo_user"
   blur-images="{{blurImages}}"
   email-address="{{emailAddress}}"
+  network-expansion-parameters="{{networkExpansionParameters}}"
   notifications="{{notifications}}"
   notification-date="{{notificationDate}}"
   notification-interval="{{notificationInterval}}"
@@ -380,7 +381,7 @@ var entityConfig = {
                     <div class="layout horizontal center">
                       <paper-icon-button
                         case$="[[caseIndex]]"
-                        class$="[[_getViewButtonStyleClass(search.notify, !enableSearch)]]"
+                        class$="[[_getViewButtonStyleClass(search.notify, enableSearch)]]"
                         icon="fa:search"
                         title$="[[_getRunButtonText(enableSearch, search.notify)]]"
                         on-tap="_runSearch"
@@ -412,7 +413,7 @@ var entityConfig = {
                     <div class="layout horizontal center">
                       <paper-icon-button
                         case$="[[caseIndex]]"
-                        class$="[[_getViewButtonStyleClass(entity.notify)]]"
+                        class$="[[_getViewButtonStyleClass(entity.notify, 'true')]]"
                         icon="fa:external-link-square"
                         title$="[[_getOpenEntityPageButtonText(entity.notify, entity.type, entityConfig)]]"
                         on-tap="_openPage">
@@ -443,7 +444,7 @@ var entityConfig = {
                     <div class="layout horizontal center">
                       <paper-icon-button
                         case$="[[caseIndex]]"
-                        class$="[[_getViewButtonStyleClass(document.notify)]]"
+                        class$="[[_getViewButtonStyleClass(document.notify, 'true')]]"
                         icon="fa:external-link-square"
                         title$="[[_getOpenDocumentPageButtonText(document.notify, documentTypeSingular)]]"
                         on-tap="_openPage">
@@ -684,6 +685,18 @@ var entityConfig = {
         /**
          * (Optional|Output)
          *
+         * The network expansion parameters.
+         *
+         * @type {Object}
+         */
+        networkExpansionParameters: {
+          notify: true,
+          type: Object
+        },
+
+        /**
+         * (Optional|Output)
+         *
          * Whether the user has notifications.
          *
          * @type {Boolean}
@@ -905,7 +918,7 @@ var entityConfig = {
        */
       _createSearchParameters: function(stateString, lastViewedByUser) {
         var stateObject = stateString ? JSON.parse(stateString) : {};
-        var searchParameters = this.buildStateDataFunction ? this.buildStateDataFunction(stateObject) : undefined;
+        var searchParameters = this.buildStateDataFunction && stateObject ? this.buildStateDataFunction(stateObject.search || {}) : undefined;
         return (searchParameters && this.resetDatesDataFunction) ? this.resetDatesDataFunction(searchParameters, this._formatDate(lastViewedByUser)) : searchParameters;
       },
 
@@ -1079,19 +1092,19 @@ var entityConfig = {
        */
       _getTermsDisplayCollection: function(stateString) {
         var stateObject = stateString ? JSON.parse(stateString) : {};
-        return this.buildPopupDataFunction ? this.buildPopupDataFunction(stateObject) : undefined;
+        return this.buildPopupDataFunction && stateObject ? this.buildPopupDataFunction(stateObject.search || {}) : undefined;
       },
 
       /**
        * Returns the style class for the 'run search' or 'open page' button with the given settings.
        *
        * @param {Boolean} notify
-       * @param {Boolean} disabled
+       * @param {Boolean} enable
        * @return {String}
        * @private
        */
-      _getViewButtonStyleClass: function(notify, disabled) {
-        return notify && !disabled ? 'add-highlight' : '';
+      _getViewButtonStyleClass: function(notify, enable) {
+        return notify && enable ? 'add-highlight' : '';
       },
 
       /**
@@ -1204,6 +1217,7 @@ var entityConfig = {
 
         this._handlingSearch = true;
         var search = this.cases[event.model.caseIndex].searchList[event.model.searchIndex];
+        this.set('networkExpansionParameters', ((search.uiState ? JSON.parse(search.uiState) : {}).networkExpansion || {}));
         this.set('searchParameters', this._createSearchParameters(search.uiState, this.notificationDate));
         this.set('processRequest', true);
         this._handlingSearch = false;
