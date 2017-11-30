@@ -61,14 +61,14 @@ limitations under the License.
 
         demo.cases = [{
           name: 'Case #1',
-          documentList: [],
           entityList: [],
+          resultList: [],
           searchList: [],
           sendEmailAlert: false
         }, {
           name: 'Case #2',
-          documentList: [],
           entityList: [],
+          resultList: [],
           searchList: [{
             lastAutomatedRun: new Date('01-05-2017'),
             lastViewedByUser: new Date('01-01-2017'),
@@ -78,14 +78,14 @@ limitations under the License.
           sendEmailAlert: false
         }, {
           name: 'Case #3',
-          documentList: [{
-            id: 'document1',
-            name: 'Document #1'
-          }],
           entityList: [{
             id: 'entity1',
             name: 'Entity #1',
             type: 'type1'
+          }],
+          resultList: [{
+            id: 'result1',
+            name: 'Result #1'
           }],
           searchList: [{
             lastAutomatedRun: new Date('01-05-2017'),
@@ -96,15 +96,6 @@ limitations under the License.
           sendEmailAlert: true
         }, {
           name: 'Case #4',
-          documentList: [{
-            id: 'document2',
-            name: 'Document #2',
-            notify: false
-          }, {
-            id: 'document3',
-            name: 'Document #3',
-            notify: true
-          }],
           entityList: [{
             id: 'entity2',
             name: 'Entity #2',
@@ -115,6 +106,15 @@ limitations under the License.
             name: 'Entity #3',
             notify: true,
             type: 'type3'
+          }],
+          resultList: [{
+            id: 'result2',
+            name: 'Result #2',
+            notify: false
+          }, {
+            id: 'result3',
+            name: 'Result #3',
+            notify: true
           }],
           searchList: [{
             lastAutomatedRun: new Date('01-05-2017'),
@@ -167,12 +167,12 @@ limitations under the License.
       <p>User Id: 1234</p>
       <p>Enable Search: true</p>
       <p>Cases: [[stringify(cases)]]</p>
-      <p>Document Icon: assignment</p>
-      <p>Document Link Function: [[linkFunction]]</p>
-      <p>Document Style Class: document-style-class</p>
-      <p>Document Type Plural: Webpages</p>
-      <p>Document Type Singular: Webpage</p>
       <p>Entity Config: [[stringify(entityConfig)]]</p>
+      <p>Result Icon: assignment</p>
+      <p>Result Link Function: [[linkFunction]]</p>
+      <p>Result Style Class: result-style-class</p>
+      <p>Result Type Plural: Webpages</p>
+      <p>Result Type Singular: Webpage</p>
       <p>Build Popup Data Function: [[buildPopupDataFunction]]</p>
       <p>Build State Data Function: [[buildStateDataFunction]]</p>
       <p>Reset Dates Data Function: [[resetDatesDataFunction]]</p>
@@ -194,12 +194,12 @@ limitations under the License.
         enable-email-address
         enable-search
         cases="[[cases]]"
-        document-icon="assignment"
-        document-link-function="[[linkFunction]]"
-        document-style-class="document-style-class"
-        document-type-plural="Webpages"
-        document-type-singular="Webpage"
         entity-config="[[entityConfig]]"
+        result-icon="assignment"
+        result-link-function="[[linkFunction]]"
+        result-style-class="result-style-class"
+        result-type-plural="Webpages"
+        result-type-singular="Webpage"
         user-id="1234"
         username="demo_user"
         blur-images="{{blurImages}}"

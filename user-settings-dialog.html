@@ -63,14 +63,14 @@ var resetDatesDataFunction = function(state, start, end) {
 
 var cases = [{
   name: 'Case #1',
-  documentList: [],
   entityList: [],
+  resultList: [],
   searchList: [],
   sendEmailAlert: false
 }, {
   name: 'Case #2',
-  documentList: [],
   entityList: [],
+  resultList: [],
   searchList: [{
     lastAutomatedRun: new Date('01-05-2017'),
     lastViewedByUser: new Date('01-01-2017'),
@@ -80,14 +80,14 @@ var cases = [{
   sendEmailAlert: false
 }, {
   name: 'Case #3',
-  documentList: [{
-    id: 'document1',
-    name: 'Document #1'
-  }],
   entityList: [{
     id: 'entity1',
     name: 'Entity #1',
     type: 'type1'
+  }],
+  resultList: [{
+    id: 'result1',
+    name: 'Result #1'
   }],
   searchList: [{
     lastAutomatedRun: new Date('01-05-2017'),
@@ -98,13 +98,6 @@ var cases = [{
   sendEmailAlert: true
 }, {
   name: 'Case #4',
-  documentList: [{
-    id: 'document2',
-    name: 'Document #2'
-  }, {
-    id: 'document3',
-    name: 'Document #3'
-  }],
   entityList: [{
     id: 'entity2',
     name: 'Entity #2',
@@ -113,6 +106,13 @@ var cases = [{
     id: 'entity3',
     name: 'Entity #3',
     type: 'type3'
+  }],
+  resultList: [{
+    id: 'result2',
+    name: 'Result #2'
+  }, {
+    id: 'result3',
+    name: 'Result #3'
   }],
   searchList: [{
     lastAutomatedRun: new Date('01-05-2017'),
@@ -162,13 +162,13 @@ var entityConfig = {
   enable-email-address
   enable-search
   cases="[[cases]]"
-  document-icon="assignment"
-  document-link-function="[[linkFunction]]"
-  document-style-class="document-style-class"
-  document-type-plural="Webpages"
-  document-type-singular="Webpage"
   entity-config="[[entityConfig]]"
   function-config="[[functionConfig]]"
+  result-icon="assignment"
+  result-link-function="[[linkFunction]]"
+  result-style-class="result-style-class"
+  result-type-plural="Webpages"
+  result-type-singular="Webpage"
   user-id="1234"
   username="demo_user"
   blur-images="{{blurImages}}"
@@ -215,8 +215,12 @@ var entityConfig = {
         padding: 0;
       }
 
-      .add-highlight {
+      .highlight-background {
         background-color: greenyellow;
+      }
+
+      .highlight-foreground {
+        color: greenyellow;
       }
 
       .notification-button {
@@ -415,8 +419,8 @@ var entityConfig = {
 
       <template is="dom-if" if="[[userId]]" restamp="true">
         <div class="layout horizontal center">
+          <span class="pointer styled-dialog-name styled-dialog-right-space" on-tap="_toggleBlur">Blur Images</span>
           <paper-icon-button icon="[[_getCheckboxIcon(blurImages, userId)]]" title="Toggle Blur Images" on-tap="_toggleBlur"></paper-icon-button>
-          <span class="pointer styled-dialog-text styled-dialog-right-space" on-tap="_toggleBlur">Blur Images</span>
         </div>
 
         <template is="dom-if" if="[[enableEmailAddress]]">
@@ -526,35 +530,35 @@ var entityConfig = {
                   </div>
                 </template>
 
-                <template is="dom-repeat" items="[[case.documentList]]" as="document" index-as="documentIndex">
+                <template is="dom-repeat" items="[[case.resultList]]" as="result" index-as="resultIndex">
                   <div class="layout vertical case-data-item">
                     <div class="layout horizontal center">
                       <paper-icon-button
                         case$="[[caseIndex]]"
-                        class$="[[_getViewButtonStyleClass(document.notify, 'true')]]"
+                        class$="[[_getViewButtonStyleClass(result.notify, 'true')]]"
                         icon="fa:external-link-square"
-                        title$="[[_getOpenDocumentPageButtonText(document.notify, documentTypeSingular)]]"
+                        title$="[[_getOpenResultPageButtonText(result.notify, resultTypeSingular)]]"
                         on-tap="_openPage">
                       </paper-icon-button>
 
                       <paper-icon-button
                         icon="fa:trash"
-                        title="Delete Saved [[documentTypeSingular]]"
+                        title="Delete Saved [[resultTypeSingular]]"
                         on-tap="_openDeleteCaseDataDialog">
                       </paper-icon-button>
 
-                      <template is="dom-if" if="[[documentIcon]]">
-                        <iron-icon class$="[[documentStyleClass]]" icon="[[documentIcon]]"></iron-icon>
+                      <template is="dom-if" if="[[resultIcon]]">
+                        <iron-icon class$="[[resultStyleClass]]" icon="[[resultIcon]]"></iron-icon>
                       </template>
 
-                      <div class="styled-dialog-name styled-dialog-right-space">[[documentTypeSingular]]</div>
-                      <div class="styled-dialog-text">[[document.name]]</div>
+                      <div class="styled-dialog-name styled-dialog-right-space">[[resultTypeSingular]]</div>
+                      <div class="styled-dialog-text">[[result.name]]</div>
                     </div>
 
                     <div class="layout horizontal center case-data-info">
-                      <div class="styled-dialog-note styled-dialog-right-space">You Last Viewed on [[_formatDate(document.lastViewedByUser)]]</div>
+                      <div class="styled-dialog-note styled-dialog-right-space">You Last Viewed on [[_formatDate(result.lastViewedByUser)]]</div>
                       <div class="styled-dialog-right-space"> |</div>
-                      <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(document.lastAutomatedRun)]]</div>
+                      <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(result.lastAutomatedRun)]]</div>
                     </div>
                   </div>
                 </template>
@@ -643,69 +647,6 @@ var entityConfig = {
           notify: true,
           observer: '_updateNotifications',
           type: Array
-        },
-
-        /**
-         * (Optional)
-         *
-         * The document icon (if any).
-         *
-         * @type {String}
-         * @default ''
-         */
-        documentIcon: {
-          type: String,
-          value: ''
-        },
-
-        /**
-         * (Required)
-         *
-         * The function to create and return the link for a given document ID.
-         *
-         * @type {Object}
-         */
-        documentLinkFunction: {
-          type: Object
-        },
-
-        /**
-         * (Optional)
-         *
-         * The document style class (if any).
-         *
-         * @type {String}
-         * @default ''
-         */
-        documentStyleClass: {
-          type: String,
-          value: ''
-        },
-
-        /**
-         * (Optional)
-         *
-         * The pretty document type string, plural.
-         *
-         * @type {String}
-         * @default 'Documents'
-         */
-        documentTypePlural: {
-          type: String,
-          value: 'Documents'
-        },
-
-        /**
-         * (Optional)
-         *
-         * The pretty document type string, singular.
-         *
-         * @type {String}
-         * @default 'Document'
-         */
-        documentTypeSingular: {
-          type: String,
-          value: 'Document'
         },
 
         /**
@@ -855,6 +796,69 @@ var entityConfig = {
         },
 
         /**
+         * (Optional)
+         *
+         * The result icon (if any).
+         *
+         * @type {String}
+         * @default ''
+         */
+        resultIcon: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * (Required)
+         *
+         * The function to create and return the link for a given result ID.
+         *
+         * @type {Object}
+         */
+        resultLinkFunction: {
+          type: Object
+        },
+
+        /**
+         * (Optional)
+         *
+         * The result style class (if any).
+         *
+         * @type {String}
+         * @default ''
+         */
+        resultStyleClass: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * (Optional)
+         *
+         * The pretty result type string, plural.
+         *
+         * @type {String}
+         * @default 'Results'
+         */
+        resultTypePlural: {
+          type: String,
+          value: 'Results'
+        },
+
+        /**
+         * (Optional)
+         *
+         * The pretty result type string, singular.
+         *
+         * @type {String}
+         * @default 'Result'
+         */
+        resultTypeSingular: {
+          type: String,
+          value: 'Result'
+        },
+
+        /**
          * (Optional|Output)
          *
          * The search parameters.
@@ -912,7 +916,7 @@ var entityConfig = {
         },
 
         /**
-         * The array (searchList, entityList, documentList) of the data to delete (from the case at the index of `_deleteCaseIndex`).
+         * The array (searchList, resultList, entityList) of the data to delete (from the case at the index of `_deleteCaseIndex`).
          *
          * @type {Number}
          * @private
@@ -1106,18 +1110,6 @@ var entityConfig = {
       },
 
       /**
-       * Returns the text for the 'open document page' button with the given settings.
-       *
-       * @param {Boolean} notify
-       * @param {String} type
-       * @return {String}
-       * @private
-       */
-      _getOpenDocumentPageButtonText: function(notify, type) {
-        return 'Open Saved ' + type + (notify ? ' (New Data Available)' : '');
-      },
-
-      /**
        * Returns the text for the 'open entity page' button with the given settings.
        *
        * @param {Boolean} notify
@@ -1129,6 +1121,18 @@ var entityConfig = {
       _getOpenEntityPageButtonText: function(notify, type, config) {
         var string = config && config[type] ? config[type].name : '';
         return 'Open Saved ' + (string || 'Entity') + (notify ? ' (New Data Available)' : '');
+      },
+
+      /**
+       * Returns the text for the 'open result page' button with the given settings.
+       *
+       * @param {Boolean} notify
+       * @param {String} type
+       * @return {String}
+       * @private
+       */
+      _getOpenResultPageButtonText: function(notify, type) {
+        return 'Open Saved ' + type + (notify ? ' (New Data Available)' : '');
       },
 
       /**
@@ -1168,7 +1172,7 @@ var entityConfig = {
        * @private
        */
       _getSettingsButtonStyleClass: function(enableSearch, notifications) {
-        return enableSearch && notifications ? 'add-highlight' : '';
+        return enableSearch && notifications ? 'highlight-foreground' : '';
       },
 
       /**
@@ -1204,7 +1208,7 @@ var entityConfig = {
        * @private
        */
       _getViewButtonStyleClass: function(notify, enable) {
-        return notify && enable ? 'add-highlight' : '';
+        return notify && enable ? 'highlight-background' : '';
       },
 
       /**
@@ -1239,10 +1243,10 @@ var entityConfig = {
           index = event.model.entityIndex;
           label = (this.entityConfig && this.entityConfig[event.model.entity.type] ? this.entityConfig[event.model.entity.type].name : '') || 'entity';
         }
-        if(event.model.documentIndex >= 0) {
-          array = 'documentList';
-          index = event.model.documentIndex;
-          label = this.documentTypeSingular;
+        if(event.model.resultIndex >= 0) {
+          array = 'resultList';
+          index = event.model.resultIndex;
+          label = this.resultTypeSingular;
         }
 
         if(array && index >= 0) {
@@ -1255,7 +1259,7 @@ var entityConfig = {
       },
 
       /**
-       * Opens the entity or document page in the given event.
+       * Opens the entity or result page in the given event.
        *
        * @param {Event} event
        * @private
@@ -1274,12 +1278,12 @@ var entityConfig = {
             linkFunction = (this.entityConfig && this.entityConfig[object.type] ? this.entityConfig[object.type].link : null);
           }
         }
-        if(event.model.documentIndex >= 0) {
-          array = 'documentList';
-          index = event.model.documentIndex;
+        if(event.model.resultIndex >= 0) {
+          array = 'resultList';
+          index = event.model.resultIndex;
           if(array && index >= 0) {
             object = this.cases[event.model.caseIndex][array][index];
-            linkFunction = this.documentLinkFunction;
+            linkFunction = this.resultLinkFunction;
           }
         }
 
@@ -1373,9 +1377,9 @@ var entityConfig = {
        */
       _updateNotifications: function() {
         this.notifications = this.cases.some(function(caseObject) {
-          return (caseObject.documentList || []).some(function(item) {
+          return (caseObject.entityList || []).some(function(item) {
             return item.notify;
-          }) || (caseObject.entityList || []).some(function(item) {
+          }) || (caseObject.resultList || []).some(function(item) {
             return item.notify;
           }) || (caseObject.searchList || []).some(function(item) {
             return item.notify;

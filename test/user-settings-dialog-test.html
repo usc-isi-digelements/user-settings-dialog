@@ -79,10 +79,10 @@ limitations under the License.
         assert.isFalse(element.blurImages);
         assert.isFunction(element.buildPopupDataFunction);
         assert.isFunction(element.buildStateDataFunction);
-        assert.equal(element.documentIcon, '');
-        assert.equal(element.documentStyleClass, '');
-        assert.equal(element.documentTypePlural, 'Documents');
-        assert.equal(element.documentTypeSingular, 'Document');
+        assert.equal(element.resultIcon, '');
+        assert.equal(element.resultStyleClass, '');
+        assert.equal(element.resultTypePlural, 'Results');
+        assert.equal(element.resultTypeSingular, 'Result');
         assert.equal(element.emailAddress, '');
         assert.isUndefined(element.entityConfig);
         assert.isFalse(element.notifications);
@@ -439,11 +439,6 @@ limitations under the License.
         assert.equal(element._getNotificationButtonText('daily', true), 'Notifications ON (Click to Toggle OFF)');
       });
 
-      test('_getOpenDocumentPageButtonText does return as expected', function() {
-        assert.equal(element._getOpenDocumentPageButtonText(false, 'Page'), 'Open Saved Page');
-        assert.equal(element._getOpenDocumentPageButtonText(true, 'Page'), 'Open Saved Page (New Data Available)');
-      });
-
       test('_getOpenEntityPageButtonText does return as expected', function() {
         assert.equal(element._getOpenEntityPageButtonText(false, 'testType', {
           testType: {
@@ -455,6 +450,11 @@ limitations under the License.
             name: 'Page'
           }
         }), 'Open Saved Page (New Data Available)');
+      });
+
+      test('_getOpenResultPageButtonText does return as expected', function() {
+        assert.equal(element._getOpenResultPageButtonText(false, 'Page'), 'Open Saved Page');
+        assert.equal(element._getOpenResultPageButtonText(true, 'Page'), 'Open Saved Page (New Data Available)');
       });
 
       test('_getProperty does return correctly', function() {
@@ -510,7 +510,7 @@ limitations under the License.
       });
 
       test('_getSettingsButtonStyleClass does return as expected', function() {
-        assert.equal(element._getSettingsButtonStyleClass(true, true), 'add-highlight');
+        assert.equal(element._getSettingsButtonStyleClass(true, true), 'highlight-foreground');
         assert.equal(element._getSettingsButtonStyleClass(true, false), '');
         assert.equal(element._getSettingsButtonStyleClass(false, true), '');
         assert.equal(element._getSettingsButtonStyleClass(false, false), '');
@@ -559,7 +559,7 @@ limitations under the License.
       });
 
       test('_getViewButtonStyleClass does return as expected', function() {
-        assert.equal(element._getViewButtonStyleClass(true, true), 'add-highlight');
+        assert.equal(element._getViewButtonStyleClass(true, true), 'highlight-background');
         assert.equal(element._getViewButtonStyleClass(true, false), '');
         assert.equal(element._getViewButtonStyleClass(false, true), '');
         assert.equal(element._getViewButtonStyleClass(false, false), '');
@@ -640,18 +640,18 @@ limitations under the License.
         assert.isTrue(deleteDialog.opened);
       });
 
-      test('_openDeleteCaseDataDialog with document index does open the delete dialog and set properties', function() {
+      test('_openDeleteCaseDataDialog with result index does open the delete dialog and set properties', function() {
         element._openDeleteCaseDataDialog({
           model: {
             caseIndex: 0,
-            documentIndex: 1
+            resultIndex: 1
           }
         });
 
         assert.equal(element._deleteCaseIndex, 0);
-        assert.equal(element._deleteCaseDataArray, 'documentList');
+        assert.equal(element._deleteCaseDataArray, 'resultList');
         assert.equal(element._deleteCaseDataIndex, 1);
-        assert.equal(element._deleteCaseDataLabel, 'document');
+        assert.equal(element._deleteCaseDataLabel, 'result');
 
         var deleteDialog = element.$$('#deleteCaseDataDialog');
         assert(deleteDialog);
@@ -662,7 +662,7 @@ limitations under the License.
         // TODO
       });
 
-      test('_openPage with document index does open the document page', function() {
+      test('_openPage with result index does open the result page', function() {
         // TODO
       });
 
