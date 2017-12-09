@@ -89,7 +89,8 @@ var cases = [{
   }],
   resultList: [{
     id: 'result1',
-    name: 'Result #1'
+    name: 'Result #1',
+    type: 'type5'
   }],
   searchList: [{
     lastAutomatedRun: new Date('01-05-2017'),
@@ -111,10 +112,12 @@ var cases = [{
   }],
   resultList: [{
     id: 'result2',
-    name: 'Result #2'
+    name: 'Result #2',
+    type: 'type5'
   }, {
     id: 'result3',
-    name: 'Result #3'
+    name: 'Result #3',
+    type: 'type5'
   }],
   searchList: [{
     lastAutomatedRun: new Date('01-05-2017'),
@@ -134,7 +137,7 @@ var linkFunction = function(id) {
   return 'http://' + id;
 };
 
-var entityConfig = {
+var dataConfig = {
   type1: {
     icon: 'bookmark',
     link: linkFunction,
@@ -152,6 +155,18 @@ var entityConfig = {
     link: linkFunction,
     name: 'Type #3',
     styleClass: 'class3'
+  },
+  type4: {
+    icon: 'face',
+    link: linkFunction,
+    name: 'Type #4',
+    styleClass: 'class4'
+  },
+  type5: {
+    icon: 'assignment',
+    link: linkFunction,
+    name: 'Type #5',
+    styleClass: 'class5'
   }
 };
 ```
@@ -164,13 +179,9 @@ var entityConfig = {
   enable-email-address
   enable-search
   cases="[[cases]]"
-  entity-config="[[entityConfig]]"
+  entity-config="[[dataConfig]]"
   function-config="[[functionConfig]]"
-  result-icon="assignment"
   result-link-function="[[linkFunction]]"
-  result-style-class="result-style-class"
-  result-type-plural="Webpages"
-  result-type-singular="Webpage"
   user-id="1234"
   username="demo_user"
   blur-images="{{blurImages}}"
@@ -521,20 +532,20 @@ var entityConfig = {
                           case$="[[caseIndex]]"
                           class$="[[_getViewButtonStyleClass(entity.notify, 'true')]]"
                           icon="fa:external-link-square"
-                          title$="[[_getOpenEntityPageButtonText(entity.notify, entity.type, entityConfig)]]"
+                          title$="[[_getOpenPageButtonText(entity.notify, entity.type, dataConfig, 'Entity')]]"
                           on-tap="_openPage">
                         </paper-icon-button>
 
                         <paper-icon-button
                           icon="fa:trash"
-                          title="Delete Saved [[_getProperty(entityConfig, entity.type, 'name')]]"
+                          title="Delete Saved [[_getProperty(dataConfig, entity.type, 'name')]]"
                           on-tap="_openDeleteCaseDataDialog">
                         </paper-icon-button>
 
                         <iron-icon
-                          class$="[[_getProperty(entityConfig, entity.type, 'styleClass')]]"
-                          icon="[[_getProperty(entityConfig, entity.type, 'icon')]]"
-                          title$="[[_getProperty(entityConfig, entity.type, 'name')]]">
+                          class$="[[_getProperty(dataConfig, entity.type, 'styleClass')]]"
+                          icon="[[_getProperty(dataConfig, entity.type, 'icon')]]"
+                          title$="[[_getProperty(dataConfig, entity.type, 'name')]]">
                         </iron-icon>
 
                         <div class="styled-dialog-text">[[entity.name]]</div>
@@ -555,19 +566,21 @@ var entityConfig = {
                           case$="[[caseIndex]]"
                           class$="[[_getViewButtonStyleClass(result.notify, 'true')]]"
                           icon="fa:external-link-square"
-                          title$="[[_getOpenResultPageButtonText(result.notify, resultTypeSingular)]]"
+                          title$="[[_getOpenPageButtonText(result.notify, result.type, dataConfig, 'Result')]]"
                           on-tap="_openPage">
                         </paper-icon-button>
 
                         <paper-icon-button
                           icon="fa:trash"
-                          title="Delete Saved [[resultTypeSingular]]"
+                          title="Delete Saved [[_getProperty(dataConfig, result.type, 'name')]]"
                           on-tap="_openDeleteCaseDataDialog">
                         </paper-icon-button>
 
-                        <template is="dom-if" if="[[resultIcon]]">
-                          <iron-icon class$="[[resultStyleClass]]" icon="[[resultIcon]]" title$="[[resultTypeSingular]]"></iron-icon>
-                        </template>
+                        <iron-icon
+                          class$="[[_getProperty(dataConfig, result.type, 'styleClass')]]"
+                          icon="[[_getProperty(dataConfig, result.type, 'icon')]]"
+                          title$="[[_getProperty(dataConfig, result.type, 'name')]]">
+                        </iron-icon>
 
                         <div class="styled-dialog-text">[[result.name]]</div>
                       </div>
@@ -674,7 +687,7 @@ var entityConfig = {
          *
          * @type {Object}
          */
-        entityConfig: {
+        dataConfig: {
           type: Object
         },
 
@@ -715,17 +728,6 @@ var entityConfig = {
         enableSearch: {
           type: Boolean,
           value: false
-        },
-
-        /**
-         * (Required)
-         *
-         * The config object for the entities in the saved cases.
-         *
-         * @type {Object}
-         */
-        entityConfig: {
-          type: Object
         },
 
         /**
@@ -814,19 +816,6 @@ var entityConfig = {
         },
 
         /**
-         * (Optional)
-         *
-         * The result icon (if any).
-         *
-         * @type {String}
-         * @default ''
-         */
-        resultIcon: {
-          type: String,
-          value: ''
-        },
-
-        /**
          * (Required)
          *
          * The function to create and return the link for a given result ID.
@@ -835,45 +824,6 @@ var entityConfig = {
          */
         resultLinkFunction: {
           type: Object
-        },
-
-        /**
-         * (Optional)
-         *
-         * The result style class (if any).
-         *
-         * @type {String}
-         * @default ''
-         */
-        resultStyleClass: {
-          type: String,
-          value: ''
-        },
-
-        /**
-         * (Optional)
-         *
-         * The pretty result type string, plural.
-         *
-         * @type {String}
-         * @default 'Results'
-         */
-        resultTypePlural: {
-          type: String,
-          value: 'Results'
-        },
-
-        /**
-         * (Optional)
-         *
-         * The pretty result type string, singular.
-         *
-         * @type {String}
-         * @default 'Result'
-         */
-        resultTypeSingular: {
-          type: String,
-          value: 'Result'
         },
 
         /**
@@ -1178,24 +1128,13 @@ var entityConfig = {
        * @param {Boolean} notify
        * @param {String} type
        * @param {Object} config
+       * @param {String} defaultValue
        * @return {String}
        * @private
        */
-      _getOpenEntityPageButtonText: function(notify, type, config) {
+      _getOpenPageButtonText: function(notify, type, config, defaultValue) {
         var string = config && config[type] ? config[type].name : '';
-        return 'Open Saved ' + (string || 'Entity') + (notify ? ' (New Data Available)' : '');
-      },
-
-      /**
-       * Returns the text for the 'open result page' button with the given settings.
-       *
-       * @param {Boolean} notify
-       * @param {String} type
-       * @return {String}
-       * @private
-       */
-      _getOpenResultPageButtonText: function(notify, type) {
-        return 'Open Saved ' + type + (notify ? ' (New Data Available)' : '');
+        return 'Open Saved ' + (string || defaultValue) + (notify ? ' (New Data Available)' : '');
       },
 
       /**
@@ -1316,12 +1255,12 @@ var entityConfig = {
         if(event.model.entityIndex >= 0) {
           array = 'entityList';
           index = event.model.entityIndex;
-          label = (this.entityConfig && this.entityConfig[event.model.entity.type] ? this.entityConfig[event.model.entity.type].name : '') || 'entity';
+          label = (this.dataConfig && this.dataConfig[event.model.entity.type] ? this.dataConfig[event.model.entity.type].name : '') || 'entity';
         }
         if(event.model.resultIndex >= 0) {
           array = 'resultList';
           index = event.model.resultIndex;
-          label = this.resultTypeSingular;
+          label = (this.dataConfig && this.dataConfig[event.model.result.type] ? this.dataConfig[event.model.result.type].name : '') || 'result';
         }
 
         if(array && index >= 0) {
@@ -1350,7 +1289,7 @@ var entityConfig = {
           index = event.model.entityIndex;
           if(array && index >= 0) {
             object = this.cases[event.model.caseIndex][array][index];
-            linkFunction = (this.entityConfig && this.entityConfig[object.type] ? this.entityConfig[object.type].link : null);
+            linkFunction = (this.dataConfig && this.dataConfig[object.type] ? this.dataConfig[object.type].link : null);
           }
         }
         if(event.model.resultIndex >= 0) {

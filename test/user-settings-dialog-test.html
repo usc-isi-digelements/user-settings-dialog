@@ -79,12 +79,8 @@ limitations under the License.
         assert.isFalse(element.blurImages);
         assert.isFunction(element.buildPopupDataFunction);
         assert.isFunction(element.buildStateDataFunction);
-        assert.equal(element.resultIcon, '');
-        assert.equal(element.resultStyleClass, '');
-        assert.equal(element.resultTypePlural, 'Results');
-        assert.equal(element.resultTypeSingular, 'Result');
         assert.equal(element.emailAddress, '');
-        assert.isUndefined(element.entityConfig);
+        assert.isUndefined(element.dataConfig);
         assert.isFalse(element.notifications);
         assert.isUndefined(element.notificationInterval);
         assert.isNull(element.notificationDate);
@@ -287,6 +283,7 @@ limitations under the License.
           }]
         }];
 
+        element._collapsedCases = [0, 1];
         element._deleteCaseIndex = 0;
 
         listener.onClick();
@@ -299,33 +296,6 @@ limitations under the License.
             uiState: '{\"networkExpansion\":{},\"search\":{\"key4\":\"value4\"}}'
           }]
         }]);
-      });
-
-      test('_createDeleteCaseListener.onClick does remove the case from _collapsedCases', function() {
-        var listener = element._createDeleteCaseListener();
-        assert.isObject(listener);
-        assert.isFunction(listener.onClick);
-
-        element.cases = [{
-          name: 'case1',
-          searchList: [{
-            uiState: '{\"networkExpansion\":{},\"search\":{\"key1\":\"value1\"}}'
-          }, {
-            uiState: '{\"networkExpansion\":{},\"search\":{\"key2\":\"value2\"}}'
-          }]
-        }, {
-          name: 'case2',
-          searchList: [{
-            uiState: '{\"networkExpansion\":{},\"search\":{\"key3\":\"value3\"}}'
-          }, {
-            uiState: '{\"networkExpansion\":{},\"search\":{\"key4\":\"value4\"}}'
-          }]
-        }];
-
-        element._collapsedCases = [0, 1];
-        element._deleteCaseIndex = 0;
-
-        listener.onClick();
 
         assert.deepEqual(element._collapsedCases, [1]);
       });
@@ -496,22 +466,19 @@ limitations under the License.
         assert.equal(element._getNotificationButtonText('daily', true), 'Notifications ON (Click to Toggle OFF)');
       });
 
-      test('_getOpenEntityPageButtonText does return as expected', function() {
-        assert.equal(element._getOpenEntityPageButtonText(false, 'testType', {
+      test('_getOpenPageButtonText does return as expected', function() {
+        assert.equal(element._getOpenPageButtonText(false, 'testType', {}, 'TestType'), 'Open Saved TestType');
+        assert.equal(element._getOpenPageButtonText(true, 'testType', {}, 'TestType'), 'Open Saved TestType (New Data Available)');
+        assert.equal(element._getOpenPageButtonText(false, 'testType', {
           testType: {
-            name: 'Page'
+            name: 'TestName'
           }
-        }), 'Open Saved Page');
-        assert.equal(element._getOpenEntityPageButtonText(true, 'testType', {
+        }, 'TestType'), 'Open Saved TestName');
+        assert.equal(element._getOpenPageButtonText(true, 'testType', {
           testType: {
-            name: 'Page'
+            name: 'TestName'
           }
-        }), 'Open Saved Page (New Data Available)');
-      });
-
-      test('_getOpenResultPageButtonText does return as expected', function() {
-        assert.equal(element._getOpenResultPageButtonText(false, 'Page'), 'Open Saved Page');
-        assert.equal(element._getOpenResultPageButtonText(true, 'Page'), 'Open Saved Page (New Data Available)');
+        }, 'TestType'), 'Open Saved TestName (New Data Available)');
       });
 
       test('_getProperty does return correctly', function() {
@@ -680,7 +647,7 @@ limitations under the License.
       });
 
       test('_openDeleteCaseDataDialog with entity index does open the delete dialog and set properties', function() {
-        element.entityConfig = {
+        element.dataConfig = {
           testType: {
             name: 'Test Type'
           }
