@@ -17,11 +17,13 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../button-action/button-action.html">
 <link rel="import" href="../fontawesome-iconset/fa-all.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/social-icons.html">
 <link rel="import" href="../lodash-import/lodash.html">
+<link rel="import" href="../modal-icon/modal-icon.html">
 <link rel="import" href="../moment-element/moment-with-locales-import.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
@@ -240,17 +242,14 @@ var entityConfig = {
         padding: 10px;
       }
 
-      .case-info {
-        margin-bottom: 10px;
+      .case-item:hover .case-info,
+      .case-item.expand .case-info {
+        background-color: rgba(0,0,0,0.1);
+        cursor: pointer;
       }
 
       .case-item .styled-dialog-divider {
         border-color: var(--secondary-text-color);
-      }
-
-      .case-name {
-        color: var(--primary-text-color);
-        font-weight: 500;
       }
 
       .case-data-info {
@@ -259,14 +258,14 @@ var entityConfig = {
       }
 
       .case-data-item {
-        margin-bottom: 10px;
         margin-top: 10px;
+        margin-left: 40px;
       }
 
       paper-dropdown-menu,
       paper-input {
         --paper-input-container: {
-          padding: 0 !important;
+          padding: 4px 0 0;
         };
       }
 
@@ -295,11 +294,22 @@ var entityConfig = {
       }
 
       .set-width {
-        width: 200px;
+        width: 175px;
       }
 
       button-action {
         margin: 10px 10px 0 10px;
+      }
+
+      modal-icon {
+        --paper-icon-button: {
+          border-radius: 50%;
+          height: 30px;
+          width: 30px;
+          min-width: 30px;
+          margin-right: 10px;
+          padding: 5px;
+        };
       }
 
       iron-icon.amber {
@@ -399,16 +409,14 @@ var entityConfig = {
       <div class="layout horizontal center">
         <div class="start-justified flex">
           <template is="dom-if" if="[[!userLoading]]">
-            <span class="styled-dialog-name styled-dialog-right-space">Logged in as</span>
-            <span class="styled-dialog-text styled-dialog-right-space">[[username]]</span>
+            <span class="styled-dialog-text styled-dialog-right-space">Logged in as <span class="styled-dialog-strong">[[username]]</span></span>
           </template>
           <template is="dom-if" if="[[userLoading]]">
             <span class="styled-dialog-text styled-dialog-right-space">Loading User Settings...</span>
           </template>
         </div>
         <div class="end-justified">
-          <span class="styled-dialog-name styled-dialog-right-space">DIG Version</span>
-          <span class="styled-dialog-text styled-dialog-right-space">DIG_VERSION</span>
+          <span class="styled-dialog-text styled-dialog-right-space">DIG Version <span class="styled-dialog-strong">DIG_VERSION</span></span>
         </div>
       </div>
 
@@ -419,20 +427,20 @@ var entityConfig = {
 
       <template is="dom-if" if="[[userId]]" restamp="true">
         <div class="layout horizontal center">
-          <span class="pointer styled-dialog-name styled-dialog-right-space" on-tap="_toggleBlur">Blur Images</span>
+          <span class="pointer styled-dialog-text styled-dialog-strong" on-tap="_toggleBlur">Blur Images</span>
           <paper-icon-button icon="[[_getCheckboxIcon(blurImages, userId)]]" title="Toggle Blur Images" on-tap="_toggleBlur"></paper-icon-button>
         </div>
 
         <template is="dom-if" if="[[enableEmailAddress]]">
           <div class="layout horizontal center">
-            <span class="set-width styled-dialog-name styled-dialog-right-space">Email Address for Alerts</span>
+            <span class="set-width styled-dialog-text styled-dialog-strong">Email Address for Alerts</span>
             <paper-input class="styled-dialog-right-space" label="Enter Email Address" value="{{_emailInput}}" no-label-float type="email" auto-validate invalid="{{_isEmailInvalid}}"></paper-input>
             <paper-icon-button disabled="[[_getEmailAddressButtonIsDisabled(_emailInput, _isEmailInvalid)]]" icon="fa:floppy-o" title="Save Email Address" on-tap="_saveEmailAddress"></paper-icon-button>
           </div>
         </template>
 
         <div class="layout horizontal center">
-          <span class="set-width styled-dialog-name styled-dialog-right-space">Check Cases for New Data</span>
+          <span class="set-width styled-dialog-text styled-dialog-strong">Check Cases for New Data</span>
           <paper-dropdown-menu class="styled-dialog-right-space" label="Interval" no-label-float>
             <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{notificationInterval}}">
               <paper-item value="never">Never</paper-item>
@@ -444,13 +452,17 @@ var entityConfig = {
 
         <div class="styled-dialog-divider"></div>
 
-        <div class="styled-dialog-name">Saved Cases</div>
+        <div class="styled-dialog-text styled-dialog-strong">Saved Cases</div>
 
         <div class="layout vertical case-list">
           <template is="dom-if" if="[[cases]]">
+            <div class="styled-dialog-divider"></div>
+
             <template is="dom-repeat" items="[[cases]]" as="case" index-as="caseIndex">
-              <div class="layout vertical case-item">
-                <div class="layout horizontal center case-info">
+              <div class$="layout vertical case-item [[_getCaseStyleClass(caseIndex, _collapsedCases)]]">
+                <div class="layout horizontal center case-info" title$="[[_getCaseTitleTooltip(caseIndex, _collapsedCases)]]" on-tap="_toggleCase">
+                  <modal-icon open="[[!_isInList(caseIndex, _collapsedCases)]]" openable></modal-icon>
+
                   <paper-icon-button
                     class$="notification-button [[_getNotificationButtonStyleClass(notificationInterval, case.sendEmailAlert)]]"
                     icon$="[[_getNotificationButtonIcon(notificationInterval, case.sendEmailAlert)]]"
@@ -460,108 +472,114 @@ var entityConfig = {
 
                   <paper-icon-button
                     icon="fa:trash"
-                    title="Delete Saved Search"
+                    title="Delete Saved Case"
                     on-tap="_openDeleteCaseDialog">
                   </paper-icon-button>
 
-                  <div class="styled-dialog-name case-name styled-dialog-right-space">[[case.name]]</div>
+                  <div class="styled-dialog-text styled-dialog-strong styled-dialog-right-space case-name">[[case.name]]</div>
                 </div>
 
-                <template is="dom-repeat" items="[[case.searchList]]" as="search" index-as="searchIndex">
-                  <div class="layout vertical case-data-item">
-                    <div class="layout horizontal center">
-                      <paper-icon-button
-                        case$="[[caseIndex]]"
-                        class$="[[_getViewButtonStyleClass(search.notify, enableSearch)]]"
-                        icon="fa:search"
-                        title$="[[_getRunButtonText(enableSearch, search.notify)]]"
-                        on-tap="_runSearch"
-                        disabled="[[!enableSearch]]">
-                      </paper-icon-button>
+                <iron-collapse opened="[[!_isInList(caseIndex, _collapsedCases)]]">
+                  <template is="dom-repeat" items="[[case.searchList]]" as="search" index-as="searchIndex">
+                    <div class="layout vertical case-data-item">
+                      <div class="layout horizontal center">
+                        <paper-icon-button
+                          case$="[[caseIndex]]"
+                          class$="[[_getViewButtonStyleClass(search.notify, enableSearch)]]"
+                          icon="fa:external-link-square"
+                          title$="[[_getRunButtonText(enableSearch, search.notify)]]"
+                          on-tap="_runSearch"
+                          disabled="[[!enableSearch]]">
+                        </paper-icon-button>
 
-                      <paper-icon-button
-                        icon="fa:trash"
-                        title="Delete Saved Search"
-                        on-tap="_openDeleteCaseDataDialog">
-                      </paper-icon-button>
+                        <paper-icon-button
+                          icon="fa:trash"
+                          title="Delete Saved Search"
+                          on-tap="_openDeleteCaseDataDialog">
+                        </paper-icon-button>
 
-                      <terms-display
-                        collection="[[_getTermsDisplayCollection(search.uiState, functionConfig)]]"
-                        label="Search Terms">
-                      </terms-display>
+                        <iron-icon icon="fa:search" title="Search Terms"></iron-icon>
+
+                        <terms-display
+                          collection="[[_getTermsDisplayCollection(search.uiState, functionConfig)]]"
+                          label="">
+                        </terms-display>
+                      </div>
+
+                      <div class="layout horizontal center case-data-info">
+                        <div class="styled-dialog-note styled-dialog-right-space">You Last Ran on [[_formatDate(search.lastViewedByUser)]]</div>
+                        <div class="styled-dialog-right-space"> |</div>
+                        <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(search.lastAutomatedRun)]]</div>
+                      </div>
                     </div>
+                  </template>
 
-                    <div class="layout horizontal center case-data-info">
-                      <div class="styled-dialog-note styled-dialog-right-space">You Last Ran on [[_formatDate(search.lastViewedByUser)]]</div>
-                      <div class="styled-dialog-right-space"> |</div>
-                      <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(search.lastAutomatedRun)]]</div>
+                  <template is="dom-repeat" items="[[case.entityList]]" as="entity" index-as="entityIndex">
+                    <div class="layout vertical case-data-item">
+                      <div class="layout horizontal center">
+                        <paper-icon-button
+                          case$="[[caseIndex]]"
+                          class$="[[_getViewButtonStyleClass(entity.notify, 'true')]]"
+                          icon="fa:external-link-square"
+                          title$="[[_getOpenEntityPageButtonText(entity.notify, entity.type, entityConfig)]]"
+                          on-tap="_openPage">
+                        </paper-icon-button>
+
+                        <paper-icon-button
+                          icon="fa:trash"
+                          title="Delete Saved [[_getProperty(entityConfig, entity.type, 'name')]]"
+                          on-tap="_openDeleteCaseDataDialog">
+                        </paper-icon-button>
+
+                        <iron-icon
+                          class$="[[_getProperty(entityConfig, entity.type, 'styleClass')]]"
+                          icon="[[_getProperty(entityConfig, entity.type, 'icon')]]"
+                          title$="[[_getProperty(entityConfig, entity.type, 'name')]]">
+                        </iron-icon>
+
+                        <div class="styled-dialog-text">[[entity.name]]</div>
+                      </div>
+
+                      <div class="layout horizontal center case-data-info">
+                        <div class="styled-dialog-note styled-dialog-right-space">You Last Viewed on [[_formatDate(entity.lastViewedByUser)]]</div>
+                        <div class="styled-dialog-right-space"> |</div>
+                        <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(entity.lastAutomatedRun)]]</div>
+                      </div>
                     </div>
-                  </div>
-                </template>
+                  </template>
 
-                <template is="dom-repeat" items="[[case.entityList]]" as="entity" index-as="entityIndex">
-                  <div class="layout vertical case-data-item">
-                    <div class="layout horizontal center">
-                      <paper-icon-button
-                        case$="[[caseIndex]]"
-                        class$="[[_getViewButtonStyleClass(entity.notify, 'true')]]"
-                        icon="fa:external-link-square"
-                        title$="[[_getOpenEntityPageButtonText(entity.notify, entity.type, entityConfig)]]"
-                        on-tap="_openPage">
-                      </paper-icon-button>
+                  <template is="dom-repeat" items="[[case.resultList]]" as="result" index-as="resultIndex">
+                    <div class="layout vertical case-data-item">
+                      <div class="layout horizontal center">
+                        <paper-icon-button
+                          case$="[[caseIndex]]"
+                          class$="[[_getViewButtonStyleClass(result.notify, 'true')]]"
+                          icon="fa:external-link-square"
+                          title$="[[_getOpenResultPageButtonText(result.notify, resultTypeSingular)]]"
+                          on-tap="_openPage">
+                        </paper-icon-button>
 
-                      <paper-icon-button
-                        icon="fa:trash"
-                        title="Delete Saved [[_getProperty(entityConfig, entity.type, 'name')]]"
-                        on-tap="_openDeleteCaseDataDialog">
-                      </paper-icon-button>
+                        <paper-icon-button
+                          icon="fa:trash"
+                          title="Delete Saved [[resultTypeSingular]]"
+                          on-tap="_openDeleteCaseDataDialog">
+                        </paper-icon-button>
 
-                      <iron-icon class$="[[_getProperty(entityConfig, entity.type, 'styleClass')]]" icon="[[_getProperty(entityConfig, entity.type, 'icon')]]"></iron-icon>
+                        <template is="dom-if" if="[[resultIcon]]">
+                          <iron-icon class$="[[resultStyleClass]]" icon="[[resultIcon]]" title$="[[resultTypeSingular]]"></iron-icon>
+                        </template>
 
-                      <div class="styled-dialog-name styled-dialog-right-space">[[_getProperty(entityConfig, entity.type, 'name')]]</div>
-                      <div class="styled-dialog-text">[[entity.name]]</div>
+                        <div class="styled-dialog-text">[[result.name]]</div>
+                      </div>
+
+                      <div class="layout horizontal center case-data-info">
+                        <div class="styled-dialog-note styled-dialog-right-space">You Last Viewed on [[_formatDate(result.lastViewedByUser)]]</div>
+                        <div class="styled-dialog-right-space"> |</div>
+                        <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(result.lastAutomatedRun)]]</div>
+                      </div>
                     </div>
-
-                    <div class="layout horizontal center case-data-info">
-                      <div class="styled-dialog-note styled-dialog-right-space">You Last Viewed on [[_formatDate(entity.lastViewedByUser)]]</div>
-                      <div class="styled-dialog-right-space"> |</div>
-                      <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(entity.lastAutomatedRun)]]</div>
-                    </div>
-                  </div>
-                </template>
-
-                <template is="dom-repeat" items="[[case.resultList]]" as="result" index-as="resultIndex">
-                  <div class="layout vertical case-data-item">
-                    <div class="layout horizontal center">
-                      <paper-icon-button
-                        case$="[[caseIndex]]"
-                        class$="[[_getViewButtonStyleClass(result.notify, 'true')]]"
-                        icon="fa:external-link-square"
-                        title$="[[_getOpenResultPageButtonText(result.notify, resultTypeSingular)]]"
-                        on-tap="_openPage">
-                      </paper-icon-button>
-
-                      <paper-icon-button
-                        icon="fa:trash"
-                        title="Delete Saved [[resultTypeSingular]]"
-                        on-tap="_openDeleteCaseDataDialog">
-                      </paper-icon-button>
-
-                      <template is="dom-if" if="[[resultIcon]]">
-                        <iron-icon class$="[[resultStyleClass]]" icon="[[resultIcon]]"></iron-icon>
-                      </template>
-
-                      <div class="styled-dialog-name styled-dialog-right-space">[[resultTypeSingular]]</div>
-                      <div class="styled-dialog-text">[[result.name]]</div>
-                    </div>
-
-                    <div class="layout horizontal center case-data-info">
-                      <div class="styled-dialog-note styled-dialog-right-space">You Last Viewed on [[_formatDate(result.lastViewedByUser)]]</div>
-                      <div class="styled-dialog-right-space"> |</div>
-                      <div class="styled-dialog-note styled-dialog-right-space">DIG Last Checked on [[_formatDate(result.lastAutomatedRun)]]</div>
-                    </div>
-                  </div>
-                </template>
+                  </template>
+                </iron-collapse>
               </div>
 
               <div class="styled-dialog-divider"></div>
@@ -906,6 +924,20 @@ var entityConfig = {
         },
 
         /**
+         * The list of collapsed case indexes.
+         *
+         * @type {Array}
+         * @default []
+         * @private
+         */
+        _collapsedCases: {
+          type: Array,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
          * The index of the case to delete (or the index of the case with data to delete if `_deleteCaseDataIndex` is set).
          *
          * @type {Number}
@@ -990,6 +1022,13 @@ var entityConfig = {
         var self = this;
         return {
           onClick: function() {
+            if(self._collapsedCases.indexOf(self._deleteCaseIndex) >= 0) {
+              self.set('_collapsedCases', self._collapsedCases.filter(function(item) {
+                return item !== self._deleteCaseIndex;
+              }).map(function(item) {
+                return item;
+              }));
+            }
             self.splice('cases', self._deleteCaseIndex, 1);
           }
         };
@@ -1045,6 +1084,30 @@ var entityConfig = {
        */
       _formatDate: function(date) {
         return date ? moment.utc(new Date(date)).format('MMMM DD, YYYY') : '';
+      },
+
+      /**
+       * Returns the style class for the case at the given index.
+       *
+       * @param {Number} caseIndex
+       * @param {Array} collapsedCases
+       * @return {String}
+       * @private
+       */
+      _getCaseStyleClass: function(caseIndex, collapsedCases) {
+        return this._isInList(caseIndex, collapsedCases) ? 'collapse' : 'expand';
+      },
+
+      /**
+       * Returns the title tooltip for the case at the given index.
+       *
+       * @param {Number} caseIndex
+       * @param {Array} collapsedCases
+       * @return {String}
+       * @private
+       */
+      _getCaseTitleTooltip: function(caseIndex, collapsedCases) {
+        return this._isInList(caseIndex, collapsedCases) ? 'Click to Expand Case' : 'Click to Collapse Case';
       },
 
       /**
@@ -1212,6 +1275,18 @@ var entityConfig = {
       },
 
       /**
+       * Returns whether the given item is in the given list.
+       *
+       * @param {Object} item
+       * @param {Array} list
+       * @return {Boolean}
+       * @private
+       */
+      _isInList: function(item, list) {
+        return (list.indexOf(item) >= 0);
+      },
+
+      /**
        * Opens the 'delete case' dialog.
        *
        * @param {Event} event
@@ -1351,6 +1426,26 @@ var entityConfig = {
       },
 
       /**
+       * Expands or collapses the case at the index in the given event.
+       *
+       * @param {Event} event
+       * @private
+       */
+      _toggleCase: function(event) {
+        if(this._collapsedCases.indexOf(event.model.caseIndex) < 0) {
+          this.set('_collapsedCases', this._collapsedCases.map(function(item) {
+            return item;
+          }).concat(event.model.caseIndex));
+        } else {
+          this.set('_collapsedCases', this._collapsedCases.filter(function(item) {
+            return item !== event.model.caseIndex;
+          }).map(function(item) {
+            return item;
+          }));
+        }
+      },
+
+      /**
        * Toggles 'sendEmailAlert` for the case in the given event.
        *
        * @param {Event} event
@@ -1396,7 +1491,7 @@ var entityConfig = {
        * @private
        */
       _updateNotificationDate: function(caseIndex, dataArray, dataIndex) {
-        var object = _.clone(this.cases[caseIndex][dataArray][dataIndex]);
+        var object = _.cloneDeep(this.cases[caseIndex][dataArray][dataIndex]);
 
         if(object.notify) {
           // notification queries have to be sorted in descending order so that newest

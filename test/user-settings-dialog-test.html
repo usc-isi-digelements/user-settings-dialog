@@ -96,6 +96,7 @@ limitations under the License.
         assert.equal(element.username, 'testUser');
         assert.equal(element.userId, '1');
         assert.isFalse(element.userLoading);
+        assert.deepEqual(element._collapsedCases, []);
         assert.equal(element._emailInput, '');
         assert.isUndefined(element._handlingSearch);
         assert.isUndefined(element._isEmailInvalid);
@@ -153,9 +154,15 @@ limitations under the License.
           assert.isNotNull(cases[0]);
           var caseDataList = Polymer.dom(element.root).querySelectorAll('.case-data-item');
           assert.equal(caseDataList.length, 1);
+          assert.isNotNull(caseDataList[0]);
+          var ironCollapses = Polymer.dom(element.root).querySelectorAll('iron-collapse');
+          assert.equal(ironCollapses.length, 1);
+          assert.isNotNull(ironCollapses[0]);
+          assert.isTrue(ironCollapses[0].opened);
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
+          assert.equal(displays[0].label, '');
           done();
         });
       });
@@ -178,7 +185,9 @@ limitations under the License.
           assert.equal(cases.length, 0);
           var caseDataList = Polymer.dom(element.root).querySelectorAll('.case-data-item');
           assert.equal(caseDataList.length, 0);
-          var displays = Polymer.dom(element.root).querySelectorAll('.terms-display');
+          var ironCollapses = Polymer.dom(element.root).querySelectorAll('iron-collapse');
+          assert.equal(ironCollapses.length, 0);
+          var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 0);
           done();
         });
@@ -207,10 +216,11 @@ limitations under the License.
           assert.isNotNull(cases[0]);
           var caseDataList = Polymer.dom(element.root).querySelectorAll('.case-data-item');
           assert.equal(caseDataList.length, 1);
+          assert.isNotNull(caseDataList[0]);
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
-          assert.isFalse(element.$$('paper-icon-button[icon="fa:search"]').disabled);
+          assert.isFalse(element.$$('paper-icon-button[icon="fa:external-link-square"]').disabled);
           done();
         });
       });
@@ -233,7 +243,7 @@ limitations under the License.
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
-          assert.isTrue(element.$$('paper-icon-button[icon="fa:search"]').disabled);
+          assert.isTrue(element.$$('paper-icon-button[icon="fa:external-link-square"]').disabled);
           done();
         });
       });
@@ -256,7 +266,7 @@ limitations under the License.
         });
       });
 
-      test('_createDeleteCaseListener.onClick does delete the search at _deleteCaseIndex', function() {
+      test('_createDeleteCaseListener.onClick does delete the case at _deleteCaseIndex', function() {
         var listener = element._createDeleteCaseListener();
         assert.isObject(listener);
         assert.isFunction(listener.onClick);
@@ -289,6 +299,35 @@ limitations under the License.
             uiState: '{\"networkExpansion\":{},\"search\":{\"key4\":\"value4\"}}'
           }]
         }]);
+      });
+
+      test('_createDeleteCaseListener.onClick does remove the case from _collapsedCases', function() {
+        var listener = element._createDeleteCaseListener();
+        assert.isObject(listener);
+        assert.isFunction(listener.onClick);
+
+        element.cases = [{
+          name: 'case1',
+          searchList: [{
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key1\":\"value1\"}}'
+          }, {
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key2\":\"value2\"}}'
+          }]
+        }, {
+          name: 'case2',
+          searchList: [{
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key3\":\"value3\"}}'
+          }, {
+            uiState: '{\"networkExpansion\":{},\"search\":{\"key4\":\"value4\"}}'
+          }]
+        }];
+
+        element._collapsedCases = [0, 1];
+        element._deleteCaseIndex = 0;
+
+        listener.onClick();
+
+        assert.deepEqual(element._collapsedCases, [1]);
       });
 
       test('_createDeleteCaseDataListener.onClick does delete the data with _deleteCaseIndex, _deleteCaseDataArray, and _deleteCaseDataIndex', function() {
@@ -404,6 +443,24 @@ limitations under the License.
       test('_formatDate does return a date string', function() {
         assert.equal(element._formatDate(new Date('September 01, 2017')), 'September 01, 2017');
         assert.equal(element._formatDate(null), '');
+      });
+
+      test('_getCaseStyleClass does return as expected', function() {
+        assert.equal(element._getCaseStyleClass(3, []), 'expand');
+        assert.equal(element._getCaseStyleClass(3, [1]), 'expand');
+        assert.equal(element._getCaseStyleClass(3, [1, 2]), 'expand');
+        assert.equal(element._getCaseStyleClass(3, [3]), 'collapse');
+        assert.equal(element._getCaseStyleClass(3, [1, 3]), 'collapse');
+        assert.equal(element._getCaseStyleClass(3, [3, 1]), 'collapse');
+      });
+
+      test('_getCaseTitleTooltip does return as expected', function() {
+        assert.equal(element._getCaseTitleTooltip(3, []), 'Click to Collapse Case');
+        assert.equal(element._getCaseTitleTooltip(3, [1]), 'Click to Collapse Case');
+        assert.equal(element._getCaseTitleTooltip(3, [1, 2]), 'Click to Collapse Case');
+        assert.equal(element._getCaseTitleTooltip(3, [3]), 'Click to Expand Case');
+        assert.equal(element._getCaseTitleTooltip(3, [1, 3]), 'Click to Expand Case');
+        assert.equal(element._getCaseTitleTooltip(3, [3, 1]), 'Click to Expand Case');
       });
 
       test('_getCheckboxIcon does return as expected', function() {
@@ -563,6 +620,15 @@ limitations under the License.
         assert.equal(element._getViewButtonStyleClass(true, false), '');
         assert.equal(element._getViewButtonStyleClass(false, true), '');
         assert.equal(element._getViewButtonStyleClass(false, false), '');
+      });
+
+      test('_isInList does return as expected', function() {
+        assert.isFalse(element._isInList(3, []));
+        assert.isFalse(element._isInList(3, [1]));
+        assert.isFalse(element._isInList(3, [1, 2]));
+        assert.isTrue(element._isInList(3, [3]));
+        assert.isTrue(element._isInList(3, [1, 3]));
+        assert.isTrue(element._isInList(3, [3, 1]));
       });
 
       test('_openDeleteCaseDialog does open the delete dialog and set _deleteCaseIndex', function() {
@@ -833,6 +899,44 @@ limitations under the License.
 
         element._toggleBlur();
         assert.isFalse(element.blurImages);
+      });
+
+      test('_toggleCase does add the caseIndex to _collapsedCases', function() {
+        element._toggleCase({
+          model: {
+            caseIndex: 0
+          }
+        });
+
+        assert.deepEqual(element._collapsedCases, [0]);
+
+        element._toggleCase({
+          model: {
+            caseIndex: 1
+          }
+        });
+
+        assert.deepEqual(element._collapsedCases, [0, 1]);
+      });
+
+      test('_toggleCase does remove the caseIndex from _collapsedCases', function() {
+        element._collapsedCases = [0, 1];
+
+        element._toggleCase({
+          model: {
+            caseIndex: 0
+          }
+        });
+
+        assert.deepEqual(element._collapsedCases, [1]);
+
+        element._toggleCase({
+          model: {
+            caseIndex: 1
+          }
+        });
+
+        assert.deepEqual(element._collapsedCases, []);
       });
 
       test('_toggleEmailAlert does update search object', function() {
