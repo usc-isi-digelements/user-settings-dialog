@@ -497,7 +497,7 @@ var dataConfig = {
                         <paper-icon-button
                           case$="[[caseIndex]]"
                           class$="[[_getViewButtonStyleClass(search.notify, enableSearch)]]"
-                          icon="fa:external-link-square"
+                          icon="fa:search"
                           title$="[[_getRunButtonText(enableSearch, search.notify)]]"
                           on-tap="_runSearch"
                           disabled="[[!enableSearch]]">
@@ -508,8 +508,6 @@ var dataConfig = {
                           title="Delete Saved Search"
                           on-tap="_openDeleteCaseDataDialog">
                         </paper-icon-button>
-
-                        <iron-icon icon="fa:search" title="Search Terms"></iron-icon>
 
                         <terms-display
                           collection="[[_getTermsDisplayCollection(search.uiState, functionConfig)]]"

@@ -216,7 +216,7 @@ limitations under the License.
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
-          assert.isFalse(element.$$('paper-icon-button[icon="fa:external-link-square"]').disabled);
+          assert.isFalse(element.$$('paper-icon-button[icon="fa:search"]').disabled);
           done();
         });
       });
@@ -239,7 +239,7 @@ limitations under the License.
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
-          assert.isTrue(element.$$('paper-icon-button[icon="fa:external-link-square"]').disabled);
+          assert.isTrue(element.$$('paper-icon-button[icon="fa:search"]').disabled);
           done();
         });
       });

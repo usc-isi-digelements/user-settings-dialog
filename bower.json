@@ -1,7 +1,7 @@
 {
   "name": "user-settings-dialog",
   "description": "A Polymer Element showing a button that opens a dialog with user settings.",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "authors": ["Next Century Corporation"],
   "license": "Apache-2.0",
   "keywords": [
