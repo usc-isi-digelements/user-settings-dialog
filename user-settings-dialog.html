@@ -455,9 +455,10 @@ var dataConfig = {
             <paper-dropdown-menu class="styled-dialog-right-space" label="Interval" no-label-float>
               <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{notificationInterval}}">
                 <paper-item value="never">Never</paper-item>
-                <paper-item value="hourly">Hourly</paper-item>
-                <paper-item value="daily">Daily</paper-item>
-                <paper-item value="weekly">Weekly</paper-item>
+                <paper-item value="minutely">Every Minute</paper-item>
+                <paper-item value="hourly">Every Hour</paper-item>
+                <paper-item value="daily">Every Day</paper-item>
+                <paper-item value="weekly">Every Week</paper-item>
               </paper-listbox>
             </paper-dropdown-menu>
           </div>
@@ -1409,7 +1410,9 @@ var dataConfig = {
        */
       _toggleEmailAlert: function(event) {
         event.stopPropagation();
-        this.set(['cases', event.model.caseIndex, 'sendEmailAlert'], !this.cases[event.model.caseIndex].sendEmailAlert);
+        var caseItem = _.cloneDeep(this.cases[event.model.caseIndex]);
+        caseItem.sendEmailAlert = !caseItem.sendEmailAlert;
+        this.splice('cases', event.model.caseIndex, 1, caseItem);
       },
 
       /**
@@ -1448,20 +1451,20 @@ var dataConfig = {
        * @private
        */
       _updateNotificationDate: function(caseIndex, dataArray, dataIndex) {
-        var object = _.cloneDeep(this.cases[caseIndex][dataArray][dataIndex]);
+        var caseObject = _.cloneDeep(this.cases[caseIndex]);
 
-        if(object.notify) {
+        if(caseObject[dataArray][dataIndex].notify) {
           // notification queries have to be sorted in descending order so that newest
           // results are first
-          object.notify = false;
-          this.notificationDate = new Date(object.lastViewedByUser);
+          caseObject[dataArray][dataIndex].notify = false;
+          this.notificationDate = new Date(caseObject[dataArray][dataIndex].lastViewedByUser);
         } else {
           // if not a notification query, reset notification flags
           this._deleteNotificationDate();
         }
 
-        object.lastViewedByUser = new Date();
-        this.splice(['cases', caseIndex, dataArray], dataIndex, 1, object);
+        caseObject[dataArray][dataIndex].lastViewedByUser = new Date();
+        this.splice('cases', caseIndex, 1, caseObject);
       },
     });
   })();
