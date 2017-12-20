@@ -413,7 +413,7 @@ var dataConfig = {
 
     <paper-icon-button
       id="settingsButton"
-      class$="[[_getSettingsButtonStyleClass(enableSearch, notifications)]]"
+      class$="[[_getSettingsButtonStyleClass(notifications)]]"
       icon="fa:cog"
       title$="[[_getSettingsButtonText(notifications)]]"
       on-tap="_openSettingsDialog">
@@ -1182,13 +1182,12 @@ var dataConfig = {
       /**
        * Returns the style class for the settings button with the given settings.
        *
-       * @param {Boolean} enableSearch
        * @param {Boolean} notifications
        * @return {String}
        * @private
        */
-      _getSettingsButtonStyleClass: function(enableSearch, notifications) {
-        return enableSearch && notifications ? 'highlight-foreground' : '';
+      _getSettingsButtonStyleClass: function(notifications) {
+        return notifications ? 'highlight-foreground' : '';
       },
 
       /**

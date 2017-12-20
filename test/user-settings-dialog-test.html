@@ -534,10 +534,8 @@ limitations under the License.
       });
 
       test('_getSettingsButtonStyleClass does return as expected', function() {
-        assert.equal(element._getSettingsButtonStyleClass(true, true), 'highlight-foreground');
-        assert.equal(element._getSettingsButtonStyleClass(true, false), '');
-        assert.equal(element._getSettingsButtonStyleClass(false, true), '');
-        assert.equal(element._getSettingsButtonStyleClass(false, false), '');
+        assert.equal(element._getSettingsButtonStyleClass(true), 'highlight-foreground');
+        assert.equal(element._getSettingsButtonStyleClass(false), '');
       });
 
       test('_getSettingsButtonText does return as expected', function() {
