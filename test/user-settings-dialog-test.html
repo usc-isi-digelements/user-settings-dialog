@@ -462,8 +462,8 @@ limitations under the License.
       test('_getNotificationButtonText does return as expected', function() {
         assert.isString(element._getNotificationButtonText('never', false));
         assert.isString(element._getNotificationButtonText('never', true));
-        assert.equal(element._getNotificationButtonText('daily', false), 'Notifications OFF (Click to Toggle ON)');
-        assert.equal(element._getNotificationButtonText('daily', true), 'Notifications ON (Click to Toggle OFF)');
+        assert.equal(element._getNotificationButtonText('daily', false), 'Alerts OFF (Click to Toggle ON)');
+        assert.equal(element._getNotificationButtonText('daily', true), 'Alerts ON (Click to Toggle OFF)');
       });
 
       test('_getOpenPageButtonText does return as expected', function() {
@@ -541,7 +541,7 @@ limitations under the License.
       });
 
       test('_getSettingsButtonText does return as expected', function() {
-        assert.equal(element._getSettingsButtonText(true), 'Open User Settings (You Have Notifications)');
+        assert.equal(element._getSettingsButtonText(true), 'Open User Settings (You Have Alerts)');
         assert.equal(element._getSettingsButtonText(false), 'Open User Settings');
       });
 
@@ -615,13 +615,19 @@ limitations under the License.
           }]
         }];
 
+        var called = 0;
+
         element._openDeleteCaseDialog({
           model: {
             caseIndex: 0
+          },
+          stopPropagation: function() {
+            called++;
           }
         });
 
         assert.equal(element._deleteCaseIndex, 0);
+        assert.equal(called, 1);
 
         var deleteDialog = element.$$('#deleteCaseDialog');
         assert(deleteDialog);
@@ -912,21 +918,31 @@ limitations under the License.
           sendEmailAlert: false
         }];
 
+        var called = 0;
+
         element._toggleEmailAlert({
           model: {
             caseIndex: 0
+          },
+          stopPropagation: function() {
+            called++;
           }
         });
 
         assert.isTrue(element.cases[0].sendEmailAlert);
+        assert.equal(called, 1);
 
         element._toggleEmailAlert({
           model: {
             caseIndex: 0
+          },
+          stopPropagation: function() {
+            called++;
           }
         });
 
         assert.isFalse(element.cases[0].sendEmailAlert);
+        assert.equal(called, 2);
       });
 
       test('_updateEmailInput does update _emailInput', function() {

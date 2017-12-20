@@ -256,6 +256,9 @@ var dataConfig = {
       .case-item:hover,
       .case-item.expand {
         background-color: rgba(0,0,0,0.1);
+      }
+
+      .case-info {
         cursor: pointer;
       }
 
@@ -452,8 +455,9 @@ var dataConfig = {
             <paper-dropdown-menu class="styled-dialog-right-space" label="Interval" no-label-float>
               <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{notificationInterval}}">
                 <paper-item value="never">Never</paper-item>
-                <paper-item value="daily">Every Day</paper-item>
-                <paper-item value="weekly">Every Week</paper-item>
+                <paper-item value="hourly">Hourly</paper-item>
+                <paper-item value="daily">Daily</paper-item>
+                <paper-item value="weekly">Weekly</paper-item>
               </paper-listbox>
             </paper-dropdown-menu>
           </div>
@@ -1126,9 +1130,9 @@ var dataConfig = {
        */
       _getNotificationButtonText: function(notificationInterval, notificationStatus) {
         if(notificationInterval === 'never') {
-          return 'Please choose a notification interval above to enable notifications on saved searches.';
+          return 'Please choose an interval under Check Cases for New Data above to enable alerts on saved searches.';
         }
-        return 'Notifications ' + (notificationStatus ? 'ON' : 'OFF') + ' (Click to Toggle ' + (notificationStatus ? 'OFF' : 'ON') + ')';
+        return 'Alerts ' + (notificationStatus ? 'ON' : 'OFF') + ' (Click to Toggle ' + (notificationStatus ? 'OFF' : 'ON') + ')';
       },
 
       /**
@@ -1194,7 +1198,7 @@ var dataConfig = {
        * @private
        */
       _getSettingsButtonText: function(notifications) {
-        return 'Open User Settings' + (notifications ? ' (You Have Notifications)' : '');
+        return 'Open User Settings' + (notifications ? ' (You Have Alerts)' : '');
       },
 
       /**
@@ -1241,6 +1245,7 @@ var dataConfig = {
        * @private
        */
       _openDeleteCaseDialog: function(event) {
+        event.stopPropagation();
         this._deleteCaseIndex = event.model.caseIndex;
         this.$$('#deleteCaseDialog').open();
       },
@@ -1403,6 +1408,7 @@ var dataConfig = {
        * @private
        */
       _toggleEmailAlert: function(event) {
+        event.stopPropagation();
         this.set(['cases', event.model.caseIndex, 'sendEmailAlert'], !this.cases[event.model.caseIndex].sendEmailAlert);
       },
 
