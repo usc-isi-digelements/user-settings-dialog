@@ -142,7 +142,7 @@ limitations under the License.
         }];
         flush(function() {
           assert.isNotNull(element.$$('paper-icon-button[title="Toggle Blur Images"]'));
-          assert.isNotNull(element.$$('paper-dropdown-menu[label="Interval"]'));
+          assert.isNotNull(element.$$('dropdown-menu[label="Interval"]'));
           assert.isNull(element.$$('paper-input[label="Enter Email Address"]'));
           assert.isNull(element.$$('paper-icon-button[title="Save Email Address"]'));
           var cases = Polymer.dom(element.root).querySelectorAll('.case-item');
@@ -174,7 +174,7 @@ limitations under the License.
         element.userId = undefined;
         flush(function() {
           assert.isNull(element.$$('paper-icon-button[title="Toggle Blur Images"]'));
-          assert.isNull(element.$$('paper-dropdown-menu[label="Interval"]'));
+          assert.isNull(element.$$('dropdown-menu[label="Interval"]'));
           assert.isNull(element.$$('paper-input[label="Enter Email Address"]'));
           assert.isNull(element.$$('paper-icon-button[title="Save Email Address"]'));
           var cases = Polymer.dom(element.root).querySelectorAll('.case-item');
