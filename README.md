@@ -1,6 +1,6 @@
 # user-settings-dialog
 
-A Polymer Element showing a button that opens a dialog with user settings.
+A Polymer Element showing a styled dialog with user settings.
 
 ### Example
 ```js
@@ -66,9 +66,12 @@ demo.cases = [{
 ```
 
 ```html
+<user-settings-button notifications="[[notifications]]" open-callback="[[buttonCallbacks.openSettingsDialog]]"></user-settings-button>
+
 <user-settings-dialog
   build-search-state-function="[[buildSearchStateFunction]]"
   build-search-terms-function="[[buildSearchTermsFunction]]"
+  button-callbacks="{{buttonCallbacks}}"
   reset-search-dates-function="[[resetSearchDatesFunction]]"
   show-search
   cases="[[cases]]"

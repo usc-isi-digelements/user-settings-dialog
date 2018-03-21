@@ -26,6 +26,7 @@ limitations under the License.
 <link rel="import" href="../lodash-import/lodash.html">
 <link rel="import" href="../modal-icon/modal-icon.html">
 <link rel="import" href="../moment-element/moment-with-locales-import.html">
+<link rel="import" href="../neon-animation/web-animations.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/color.html">
@@ -34,7 +35,7 @@ limitations under the License.
 <link rel="import" href="../terms-display/terms-display.html">
 
 <!--
-A Polymer Element showing a button that opens a dialog with user settings.
+A Polymer Element showing a styled dialog with user settings.
 
 ### Example
 ```js
@@ -200,7 +201,7 @@ var dataConfig = {
     <style include="styled-dialog-styles"></style>
     <style>
       :host {
-        display: inline-block;
+        display: block;
       }
 
       iron-icon {
@@ -219,12 +220,6 @@ var dataConfig = {
         padding: 5px;
       }
 
-      #settingsButton {
-        margin-left: 10px;
-        margin-right: 0;
-        padding: 0;
-      }
-
       .highlight-background {
         background-color: greenyellow;
       }
@@ -241,7 +236,7 @@ var dataConfig = {
         color: var(--paper-grey-900);
       }
 
-      paper-icon-button:not(#settingsButton):hover {
+      paper-icon-button:hover {
         color: black;
       }
 
@@ -386,14 +381,6 @@ var dataConfig = {
         color: var(--paper-yellow-600);
       }
     </style>
-
-    <paper-icon-button
-      id="settingsButton"
-      class$="[[_getSettingsButtonStyleClass(notifications)]]"
-      icon="fa:cog"
-      title$="[[_getSettingsButtonText(notifications)]]"
-      on-tap="_openSettingsDialog">
-    </paper-icon-button>
 
     <styled-dialog id="settingsDialog" header="User Settings" fill>
       <div class="layout horizontal center">
@@ -617,6 +604,29 @@ var dataConfig = {
         blurImages: {
           notify: true,
           type: Boolean
+        },
+
+        /**
+         * (Output)
+         *
+         * Object containing the callbacks for the `user-settings-button` with property `openSettingsDialog`.
+         *
+         * @type {Object}
+         */
+        buttonCallbacks: {
+          notify: true,
+          type: Object,
+          value: function() {
+            var self = this;
+            return {
+              openSettingsDialog: function() {
+                self.$.settingsDialog.open();
+                if(self.profileManager && self.profileManager.reloadUser) {
+                  self.profileManager.reloadUser(function() {});
+                }
+              }
+            };
+          }
         },
 
         /**
@@ -1154,28 +1164,6 @@ var dataConfig = {
       },
 
       /**
-       * Returns the style class for the settings button with the given settings.
-       *
-       * @param {Boolean} notifications
-       * @return {String}
-       * @private
-       */
-      _getSettingsButtonStyleClass: function(notifications) {
-        return notifications ? 'highlight-foreground' : '';
-      },
-
-      /**
-       * Returns the text for the settings button with the given status.
-       *
-       * @param {Boolean} notifications
-       * @return {String}
-       * @private
-       */
-      _getSettingsButtonText: function(notifications) {
-        return 'Open User Settings' + (notifications ? ' (You Have Alerts)' : '');
-      },
-
-      /**
        * Returns the object for the `terms-display` using the given state.
        *
        * @param {String} stateString
@@ -1297,18 +1285,6 @@ var dataConfig = {
             this._updateNotifications();
             window.open(link, '_blank');
           }
-        }
-      },
-
-      /**
-       * Opens the settings dialog.
-       *
-       * @private
-       */
-      _openSettingsDialog: function() {
-        this.$$('#settingsDialog').open();
-        if(this.profileManager && this.profileManager.reloadUser) {
-          this.profileManager.reloadUser(function() {});
         }
       },
 

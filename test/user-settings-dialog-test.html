@@ -98,13 +98,6 @@ limitations under the License.
         assert.isUndefined(element._isEmailInvalid);
       });
 
-      test('does have settings button element', function() {
-        var settingsButton = element.$$('#settingsButton');
-        assert(settingsButton);
-        assert.equal(settingsButton.icon, 'fa:cog');
-        assert.isString(settingsButton.title);
-      });
-
       test('does have closed settings dialog element', function() {
         var settingsDialog = element.$$('#settingsDialog');
         assert(settingsDialog);
@@ -533,16 +526,6 @@ limitations under the License.
         assert.equal(element._getRunButtonText(false, true), 'Run Saved Search (New Data Available)');
       });
 
-      test('_getSettingsButtonStyleClass does return as expected', function() {
-        assert.equal(element._getSettingsButtonStyleClass(true), 'highlight-foreground');
-        assert.equal(element._getSettingsButtonStyleClass(false), '');
-      });
-
-      test('_getSettingsButtonText does return as expected', function() {
-        assert.equal(element._getSettingsButtonText(true), 'Open User Settings (You Have Alerts)');
-        assert.equal(element._getSettingsButtonText(false), 'Open User Settings');
-      });
-
       test('_getTermsDisplayCollection does a new object using buildPopupDataFunction', function() {
         assert.deepEqual(element._getTermsDisplayCollection(''), {});
 
@@ -703,11 +686,32 @@ limitations under the License.
         // TODO
       });
 
-      test('_openSettingsDialog does open the settings dialog', function() {
-        element._openSettingsDialog();
-        var settingsDialog = element.$$('#settingsDialog');
-        assert(settingsDialog);
-        assert.isTrue(settingsDialog.opened);
+      test('buttonCallbacks.openSettingsDialog does open the settings dialog', function(done) {
+        assert.isObject(element.buttonCallbacks);
+        assert.isFunction(element.buttonCallbacks.openSettingsDialog);
+        element.buttonCallbacks.openSettingsDialog();
+
+        flush(function() {
+          var settingsDialog = element.$$('#settingsDialog');
+          assert(settingsDialog);
+          assert.isTrue(settingsDialog.opened);
+          done();
+        });
+      });
+
+      test('buttonCallbacks.openSettingsDialog does call profileManager.reloadUser', function() {
+        var calls = 0;
+        element.profileManager = {
+          reloadUser: function(func) {
+            ++calls;
+            assert.isFunction(func);
+          }
+        };
+
+        assert.isObject(element.buttonCallbacks);
+        assert.isFunction(element.buttonCallbacks.openSettingsDialog);
+        element.buttonCallbacks.openSettingsDialog();
+        assert.equal(calls, 1);
       });
 
       test('_runSearch does set the networkExpansionParameters, notificationDate, and searchParameters and does close the settings dialog', function() {
@@ -1154,8 +1158,9 @@ limitations under the License.
       });
 
       test('setting emailAddress does update _emailInput', function() {
+        element._emailInput = '';
         assert.equal(element._emailInput, '');
-        element.emailAddress = 'abc@xyz.com';
+        element._emailInput = 'abc@xyz.com';
         assert.equal(element._emailInput, 'abc@xyz.com');
       });
     });

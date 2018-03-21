@@ -1,0 +1,89 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>user-settings-button</title>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <link rel="import" href="../user-settings-button.html">
+</head>
+
+<body>
+  <test-fixture id="user-settings-button-fixture">
+    <template>
+      <user-settings-button></user-settings-button>
+    </template>
+  </test-fixture>
+
+  <script>
+    /* globals suite, setup, fixture, flush, test, assert */
+    /* jshint -W030 */
+    suite('user-settings-button tests', function() {
+      var element;
+
+      setup(function(done) {
+        element = fixture('user-settings-button-fixture');
+        flush(done);
+      });
+
+      test('properties are set as expected', function() {
+        assert.isFalse(element.notifications);
+        assert.isUndefined(element.openCallback);
+      });
+
+      test('does have settings button element', function() {
+        var settingsButton = element.$$('#settingsButton');
+        assert(settingsButton);
+        assert.equal(settingsButton.icon, 'fa:cog');
+        assert.isString(settingsButton.title);
+        assert.isFalse(settingsButton.classList.contains('highlight-foreground'));
+      });
+
+      test('settings button element does have highlight if notifications is true', function() {
+        element.notifications = true;
+        var settingsButton = element.$$('#settingsButton');
+        assert(settingsButton);
+        assert.equal(settingsButton.icon, 'fa:cog');
+        assert.isString(settingsButton.title);
+        assert.isTrue(settingsButton.classList.contains('highlight-foreground'));
+      });
+
+      test('_getSettingsButtonStyleClass does return as expected', function() {
+        assert.equal(element._getSettingsButtonStyleClass(true), 'highlight-foreground');
+        assert.equal(element._getSettingsButtonStyleClass(false), '');
+      });
+
+      test('_getSettingsButtonText does return as expected', function() {
+        assert.equal(element._getSettingsButtonText(true), 'Open User Settings (You Have Alerts)');
+        assert.equal(element._getSettingsButtonText(false), 'Open User Settings');
+      });
+
+      test('_openSettingsDialog does call openCallback', function() {
+        var calls = 0;
+        element.openCallback = function() {
+          ++calls;
+        };
+
+        element._openSettingsDialog();
+
+        expect(calls).to.equal(1);
+      });
+    });
+  </script>
+</body>
+</html>
