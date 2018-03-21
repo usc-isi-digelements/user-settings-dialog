@@ -876,7 +876,8 @@ limitations under the License.
         element._toggleCase({
           model: {
             caseIndex: 0
-          }
+          },
+          path: [{}]
         });
 
         assert.deepEqual(element._collapsedCases, [0]);
@@ -884,10 +885,35 @@ limitations under the License.
         element._toggleCase({
           model: {
             caseIndex: 1
-          }
+          },
+          path: [{}]
         });
 
         assert.deepEqual(element._collapsedCases, [0, 1]);
+      });
+
+      test('_toggleCase does not add the caseIndex to _collapsedCases if the event was caused by an iron-icon or paper-icon-button', function() {
+        element._toggleCase({
+          model: {
+            caseIndex: 0
+          },
+          path: [{
+            localName: 'iron-icon'
+          }]
+        });
+
+        assert.deepEqual(element._collapsedCases, []);
+
+        element._toggleCase({
+          model: {
+            caseIndex: 0
+          },
+          path: [{
+            localName: 'paper-icon-button'
+          }]
+        });
+
+        assert.deepEqual(element._collapsedCases, []);
       });
 
       test('_toggleCase does remove the caseIndex from _collapsedCases', function() {
@@ -896,7 +922,8 @@ limitations under the License.
         element._toggleCase({
           model: {
             caseIndex: 0
-          }
+          },
+          path: [{}]
         });
 
         assert.deepEqual(element._collapsedCases, [1]);
@@ -904,10 +931,37 @@ limitations under the License.
         element._toggleCase({
           model: {
             caseIndex: 1
-          }
+          },
+          path: [{}]
         });
 
         assert.deepEqual(element._collapsedCases, []);
+      });
+
+      test('_toggleCase does not remove the caseIndex from _collapsedCases if the event was caused by an iron-icon or paper-icon-button', function() {
+        element._collapsedCases = [0];
+
+        element._toggleCase({
+          model: {
+            caseIndex: 0
+          },
+          path: [{
+            localName: 'iron-icon'
+          }]
+        });
+
+        assert.deepEqual(element._collapsedCases, [0]);
+
+        element._toggleCase({
+          model: {
+            caseIndex: 0
+          },
+          path: [{
+            localName: 'paper-icon-button'
+          }]
+        });
+
+        assert.deepEqual(element._collapsedCases, [0]);
       });
 
       test('_toggleEmailAlert does update search object', function() {

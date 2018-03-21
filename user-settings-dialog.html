@@ -29,7 +29,6 @@ limitations under the License.
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/color.html">
-<link rel="import" href="../paper-styles/shadow.html">
 <link rel="import" href="../styled-dialog/styled-dialog.html">
 <link rel="import" href="../styled-dialog/styled-dialog-styles.html">
 <link rel="import" href="../terms-display/terms-display.html">
@@ -235,11 +234,11 @@ var dataConfig = {
       }
 
       .notification-button {
-        color: var(--secondary-text-color);
+        color: var(--paper-grey-600);
       }
 
       .active {
-        color: var(--primary-text-color);
+        color: var(--paper-grey-900);
       }
 
       paper-icon-button:not(#settingsButton):hover {
@@ -247,21 +246,17 @@ var dataConfig = {
       }
 
       .case-item {
-        box-shadow: var(--shadow-elevation-4dp);
+        cursor: pointer;
         padding: 10px;
       }
 
       .case-item:hover,
       .case-item.expand {
-        background-color: rgba(0,0,0,0.1);
-      }
-
-      .case-info {
-        cursor: pointer;
+        background-color: var(--paper-grey-100);
       }
 
       .case-item .styled-dialog-divider {
-        border-color: var(--secondary-text-color);
+        border-color: var(--paper-grey-600);
       }
 
       .case-data-info {
@@ -451,8 +446,8 @@ var dataConfig = {
               <div class="styled-dialog-divider"></div>
 
               <template is="dom-repeat" items="[[cases]]" as="case" index-as="caseIndex">
-                <div class$="layout vertical case-item [[_getCaseStyleClass(caseIndex, _collapsedCases)]]">
-                  <div class="layout horizontal center case-info" title$="[[_getCaseTitleTooltip(caseIndex, _collapsedCases)]]" on-tap="_toggleCase">
+                <div class$="layout vertical case-item [[_getCaseStyleClass(caseIndex, _collapsedCases)]]" title$="[[_getCaseTitleTooltip(caseIndex, _collapsedCases)]]" on-tap="_toggleCase">
+                  <div class="layout horizontal center case-info">
                     <modal-icon open="[[!_isInList(caseIndex, _collapsedCases)]]" openable></modal-icon>
 
                     <paper-icon-button
@@ -1367,6 +1362,10 @@ var dataConfig = {
        * @private
        */
       _toggleCase: function(event) {
+        if(event.path[0].localName === 'paper-icon-button' || event.path[0].localName === 'iron-icon') {
+          return;
+        }
+
         if(this._collapsedCases.indexOf(event.model.caseIndex) < 0) {
           this.set('_collapsedCases', this._collapsedCases.map(function(item) {
             return item;
