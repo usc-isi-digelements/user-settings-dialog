@@ -50,8 +50,8 @@ limitations under the License.
         var settingsButton = element.$$('#settingsButton');
         assert(settingsButton);
         assert.equal(settingsButton.icon, 'fa:cog');
-        assert.isString(settingsButton.title);
-        assert.isFalse(settingsButton.classList.contains('highlight-foreground'));
+        assert.equal(settingsButton.titleTooltip, 'Open User Settings');
+        assert.isFalse(settingsButton.active);
       });
 
       test('settings button element does have highlight if notifications is true', function() {
@@ -59,13 +59,8 @@ limitations under the License.
         var settingsButton = element.$$('#settingsButton');
         assert(settingsButton);
         assert.equal(settingsButton.icon, 'fa:cog');
-        assert.isString(settingsButton.title);
-        assert.isTrue(settingsButton.classList.contains('highlight-foreground'));
-      });
-
-      test('_getSettingsButtonStyleClass does return as expected', function() {
-        assert.equal(element._getSettingsButtonStyleClass(true), 'highlight-foreground');
-        assert.equal(element._getSettingsButtonStyleClass(false), '');
+        assert.equal(settingsButton.titleTooltip, 'Open User Settings (You Have Alerts)');
+        assert.isTrue(settingsButton.active);
       });
 
       test('_getSettingsButtonText does return as expected', function() {

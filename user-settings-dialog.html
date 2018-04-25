@@ -18,20 +18,18 @@ limitations under the License.
 <link rel="import" href="../button-action/button-action.html">
 <link rel="import" href="../dropdown-menu/dropdown-menu.html">
 <link rel="import" href="../fontawesome-iconset/fa-all.html">
+<link rel="import" href="../icon-button/icon-button.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../iron-icons/iron-icons.html">
-<link rel="import" href="../iron-icons/social-icons.html">
 <link rel="import" href="../lodash-import/lodash.html">
 <link rel="import" href="../modal-icon/modal-icon.html">
 <link rel="import" href="../moment-element/moment-with-locales-import.html">
 <link rel="import" href="../neon-animation/web-animations.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../styled-dialog/styled-dialog.html">
 <link rel="import" href="../styled-dialog/styled-dialog-styles.html">
+<link rel="import" href="../stylized-icon/stylized-icon.html">
 <link rel="import" href="../terms-display/terms-display.html">
 
 <!--
@@ -204,40 +202,18 @@ var dataConfig = {
         display: block;
       }
 
-      iron-icon {
-        height: 20px;
-        width: 20px;
-        min-width: 20px;
+      icon-button {
         margin-right: 10px;
       }
 
-      paper-icon-button {
-        border-radius: 50%;
-        height: 30px;
-        width: 30px;
-        min-width: 30px;
+      stylized-icon {
         margin-right: 10px;
-        padding: 5px;
       }
 
       .highlight-background {
-        background-color: greenyellow;
-      }
-
-      .highlight-foreground {
-        color: greenyellow;
-      }
-
-      .notification-button {
-        color: var(--paper-grey-600);
-      }
-
-      .active {
-        color: var(--paper-grey-900);
-      }
-
-      paper-icon-button:hover {
-        color: black;
+        --icon-button-mixin: {
+          background-color: greenyellow;
+        };
       }
 
       .case-item {
@@ -248,6 +224,10 @@ var dataConfig = {
       .case-item:hover,
       .case-item.expand {
         background-color: var(--paper-grey-100);
+      }
+
+      .case-item:hover modal-icon {
+        --modal-icon-color: var(--paper-grey-900);
       }
 
       .case-item .styled-dialog-divider {
@@ -287,98 +267,7 @@ var dataConfig = {
       }
 
       modal-icon {
-        --paper-icon-button: {
-          border-radius: 50%;
-          height: 30px;
-          width: 30px;
-          min-width: 30px;
-          margin-right: 10px;
-          padding: 5px;
-        };
-      }
-
-      iron-icon.amber {
-        color: var(--paper-amber-600);
-      }
-
-      iron-icon.black {
-        color: #111;
-      }
-
-      iron-icon.blue {
-        color: var(--paper-blue-600);
-      }
-
-      iron-icon.blue-grey {
-        color: var(--paper-blue-grey-600);
-      }
-
-      iron-icon.brown {
-        color: var(--paper-brown-600);
-      }
-
-      iron-icon.cyan {
-        color: var(--paper-cyan-600);
-      }
-
-      iron-icon.deep-orange {
-        color: var(--paper-deep-orange-600);
-      }
-
-      iron-icon.deep-purple {
-        color: var(--paper-deep-purple-600);
-      }
-
-      iron-icon.green {
-        color: var(--paper-green-600);
-      }
-
-      iron-icon.grey {
-        color: var(--paper-grey-600);
-      }
-
-      iron-icon.indigo {
-        color: var(--paper-indigo-600);
-      }
-
-      iron-icon.light-blue {
-        color: var(--paper-light-blue-600);
-      }
-
-      iron-icon.light-green {
-        color: var(--paper-light-green-600);
-      }
-
-      iron-icon.lime {
-        color: var(--paper-lime-600);
-      }
-
-      iron-icon.orange {
-        color: var(--paper-orange-600);
-      }
-
-      iron-icon.pink {
-        color: var(--paper-pink-600);
-      }
-
-      iron-icon.purple {
-        color: var(--paper-purple-600);
-      }
-
-      iron-icon.red {
-        color: var(--paper-red-600);
-      }
-
-      iron-icon.teal {
-        color: var(--paper-teal-600);
-      }
-
-      iron-icon.white {
-        color: #fff;
-      }
-
-      iron-icon.yellow {
-        color: var(--paper-yellow-600);
+        margin-right: 10px;
       }
     </style>
 
@@ -402,14 +291,29 @@ var dataConfig = {
         <template is="dom-if" if="[[userId]]" restamp="true">
           <div class="layout horizontal center">
             <span class="pointer styled-dialog-text styled-dialog-strong styled-dialog-right-space" on-tap="_toggleBlur">Blur Images</span>
-            <paper-icon-button icon="[[_getCheckboxIcon(blurImages, userId)]]" title="Toggle Blur Images" on-tap="_toggleBlur"></paper-icon-button>
+            <icon-button
+              active="[[blurImages]]"
+              bigger
+              class="checkbox"
+              icon="[[_getCheckboxIcon(blurImages)]]"
+              padded
+              title-tooltip="Toggle Blur Images"
+              on-tap="_toggleBlur">
+            </icon-button>
           </div>
 
           <template is="dom-if" if="[[enableEmailAddress]]">
             <div class="layout horizontal center">
               <span class="set-width styled-dialog-text styled-dialog-strong">Email Address for Alerts</span>
               <paper-input class="styled-dialog-right-space" label="Enter Email Address" value="{{_emailInput}}" no-label-float type="email" auto-validate invalid="{{_isEmailInvalid}}"></paper-input>
-              <paper-icon-button disabled="[[_getEmailAddressButtonIsDisabled(_emailInput, _isEmailInvalid)]]" icon="fa:floppy-o" title="Save Email Address" on-tap="_saveEmailAddress"></paper-icon-button>
+              <icon-button
+                bigger
+                disabled="[[_getEmailAddressButtonIsDisabled(_emailInput, _isEmailInvalid)]]"
+                icon="fa:floppy-o"
+                padded
+                title-tooltip="Save Email Address"
+                on-tap="_saveEmailAddress">
+              </icon-button>
             </div>
           </template>
 
@@ -437,18 +341,22 @@ var dataConfig = {
                   <div class="layout horizontal center case-info">
                     <modal-icon open="[[!_isInList(caseIndex, _collapsedCases)]]" openable></modal-icon>
 
-                    <paper-icon-button
-                      class$="notification-button [[_getNotificationButtonStyleClass(notificationInterval, case.sendEmailAlert)]]"
-                      icon$="[[_getNotificationButtonIcon(notificationInterval, case.sendEmailAlert)]]"
-                      title="[[_getNotificationButtonText(notificationInterval, case.sendEmailAlert)]]"
+                    <icon-button
+                      active="[[_getNotificationButtonIsActive(notificationInterval, case.sendEmailAlert)]]"
+                      bigger
+                      icon="[[_getNotificationButtonIcon(notificationInterval, case.sendEmailAlert)]]"
+                      padded
+                      title-tooltip="[[_getNotificationButtonText(notificationInterval, case.sendEmailAlert)]]"
                       on-tap="_toggleEmailAlert">
-                    </paper-icon-button>
+                    </icon-button>
 
-                    <paper-icon-button
+                    <icon-button
+                      bigger
                       icon="fa:trash"
-                      title="Delete Saved Case"
+                      padded
+                      title-tooltip="Delete Saved Case"
                       on-tap="_openDeleteCaseDialog">
-                    </paper-icon-button>
+                    </icon-button>
 
                     <div class="styled-dialog-text styled-dialog-strong styled-dialog-right-space case-name">[[case.name]]</div>
                   </div>
@@ -457,20 +365,24 @@ var dataConfig = {
                     <template is="dom-repeat" items="[[case.searchList]]" as="search" index-as="searchIndex">
                       <div class="layout vertical case-data-item">
                         <div class="layout horizontal center">
-                          <paper-icon-button
+                          <icon-button
+                            bigger
                             case$="[[caseIndex]]"
                             class$="[[_getViewButtonStyleClass(search.notify, enableSearch)]]"
                             icon="fa:search"
-                            title$="[[_getRunButtonText(enableSearch, search.notify)]]"
+                            padded
+                            title-tooltip="[[_getRunButtonText(enableSearch, search.notify)]]"
                             on-tap="_runSearch"
                             disabled="[[!enableSearch]]">
-                          </paper-icon-button>
+                          </icon-button>
 
-                          <paper-icon-button
+                          <icon-button
+                            bigger
                             icon="fa:trash"
-                            title="Delete Saved Search"
+                            padded
+                            title-tooltip="Delete Saved Search"
                             on-tap="_openDeleteCaseDataDialog">
-                          </paper-icon-button>
+                          </icon-button>
 
                           <terms-display
                             collection="[[_getTermsDisplayCollection(search.uiState, functionConfig)]]"
@@ -489,25 +401,29 @@ var dataConfig = {
                     <template is="dom-repeat" items="[[case.entityList]]" as="entity" index-as="entityIndex">
                       <div class="layout vertical case-data-item">
                         <div class="layout horizontal center">
-                          <paper-icon-button
+                          <icon-button
+                            bigger
                             case$="[[caseIndex]]"
                             class$="[[_getViewButtonStyleClass(entity.notify, 'true')]]"
                             icon="fa:external-link-square"
-                            title$="[[_getOpenPageButtonText(entity.notify, entity.type, dataConfig, 'Entity')]]"
+                            padded
+                            title-tooltip="[[_getOpenPageButtonText(entity.notify, entity.type, dataConfig, 'Entity')]]"
                             on-tap="_openPage">
-                          </paper-icon-button>
+                          </icon-button>
 
-                          <paper-icon-button
+                          <icon-button
+                            bigger
                             icon="fa:trash"
-                            title="Delete Saved [[_getProperty(dataConfig, entity.type, 'name')]]"
+                            padded
+                            title-tooltip="Delete Saved [[_getProperty(dataConfig, entity.type, 'name')]]"
                             on-tap="_openDeleteCaseDataDialog">
-                          </paper-icon-button>
+                          </icon-button>
 
-                          <iron-icon
-                            class$="[[_getProperty(dataConfig, entity.type, 'styleClass')]]"
+                          <stylized-icon
                             icon="[[_getProperty(dataConfig, entity.type, 'icon')]]"
-                            title$="[[_getProperty(dataConfig, entity.type, 'name')]]">
-                          </iron-icon>
+                            style-class="[[_getProperty(dataConfig, entity.type, 'styleClass')]]"
+                            title-tooltip="[[_getProperty(dataConfig, entity.type, 'name')]]">
+                          </stylized-icon>
 
                           <div class="styled-dialog-text">[[entity.name]]</div>
                         </div>
@@ -523,25 +439,29 @@ var dataConfig = {
                     <template is="dom-repeat" items="[[case.resultList]]" as="result" index-as="resultIndex">
                       <div class="layout vertical case-data-item">
                         <div class="layout horizontal center">
-                          <paper-icon-button
+                          <icon-button
+                            bigger
                             case$="[[caseIndex]]"
                             class$="[[_getViewButtonStyleClass(result.notify, 'true')]]"
                             icon="fa:external-link-square"
-                            title$="[[_getOpenPageButtonText(result.notify, result.type, dataConfig, 'Result')]]"
+                            padded
+                            title-tooltip="[[_getOpenPageButtonText(result.notify, result.type, dataConfig, 'Result')]]"
                             on-tap="_openPage">
-                          </paper-icon-button>
+                          </icon-button>
 
-                          <paper-icon-button
+                          <icon-button
+                            bigger
                             icon="fa:trash"
-                            title="Delete Saved [[_getProperty(dataConfig, result.type, 'name')]]"
+                            padded
+                            title-tooltip="Delete Saved [[_getProperty(dataConfig, result.type, 'name')]]"
                             on-tap="_openDeleteCaseDataDialog">
-                          </paper-icon-button>
+                          </icon-button>
 
-                          <iron-icon
-                            class$="[[_getProperty(dataConfig, result.type, 'styleClass')]]"
+                          <stylized-icon
                             icon="[[_getProperty(dataConfig, result.type, 'icon')]]"
-                            title$="[[_getProperty(dataConfig, result.type, 'name')]]">
-                          </iron-icon>
+                            stlye-class="[[_getProperty(dataConfig, result.type, 'styleClass')]]"
+                            title-tooltip="[[_getProperty(dataConfig, result.type, 'name')]]">
+                          </stylized-icon>
 
                           <div class="styled-dialog-text">[[result.name]]</div>
                         </div>
@@ -1094,15 +1014,15 @@ var dataConfig = {
       },
 
       /**
-       * Returns the style class for the notification button with the given interval and status.
+       * Returns whether the notification button with the given interval and status is active.
        *
        * @param {String} notificationInterval
        * @param {Boolean} notificationStatus
        * @return {String}
        * @private
        */
-      _getNotificationButtonStyleClass: function(notificationInterval, notificationStatus) {
-        return notificationInterval === 'never' || !notificationStatus ? '' : 'active';
+      _getNotificationButtonIsActive: function(notificationInterval, notificationStatus) {
+        return !(notificationInterval === 'never' || !notificationStatus);
       },
 
       /**
@@ -1311,9 +1231,8 @@ var dataConfig = {
       },
 
       /**
-       * Returns a `button-action` listener to save the email address in `_emailInput` as `emailAddress`.
+       * Saves the email address in `_emailInput` as `emailAddress`.
        *
-       * @return {Object}
        * @private
        */
       _saveEmailAddress: function() {
@@ -1338,7 +1257,7 @@ var dataConfig = {
        * @private
        */
       _toggleCase: function(event) {
-        if(event.path[0].localName === 'paper-icon-button' || event.path[0].localName === 'iron-icon') {
+        if(event.srcElement.localName !== 'modal-icon' && (event.path[0].localName === 'paper-icon-button' || event.path[0].localName === 'iron-icon')) {
           return;
         }
 

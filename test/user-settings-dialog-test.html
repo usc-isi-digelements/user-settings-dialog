@@ -20,6 +20,7 @@ limitations under the License.
   <title>user-settings-dialog</title>
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
+  <link rel="import" href="../bower_components/neon-animation/web-animations.html">
   <link rel="import" href="../user-settings-dialog.html">
 </head>
 
@@ -134,10 +135,16 @@ limitations under the License.
           sendEmailAlert: false
         }];
         flush(function() {
-          assert.isNotNull(element.$$('paper-icon-button[title="Toggle Blur Images"]'));
+          assert.isNotNull(element.$$('icon-button.checkbox'));
+          assert.equal(element.$$('icon-button.checkbox').titleTooltip, 'Toggle Blur Images');
+          assert.isFalse(element.$$('icon-button.checkbox').active);
+          assert.isTrue(element.$$('icon-button.checkbox').bigger);
+          assert.isTrue(element.$$('icon-button.checkbox').padded);
+
           assert.isNotNull(element.$$('dropdown-menu[label="Interval"]'));
           assert.isNull(element.$$('paper-input[label="Enter Email Address"]'));
-          assert.isNull(element.$$('paper-icon-button[title="Save Email Address"]'));
+          assert.isNull(element.$$('icon-button[icon="fa:floppy-o"]'));
+
           var cases = Polymer.dom(element.root).querySelectorAll('.case-item');
           assert.equal(cases.length, 1);
           assert.isNotNull(cases[0]);
@@ -166,10 +173,10 @@ limitations under the License.
         }];
         element.userId = undefined;
         flush(function() {
-          assert.isNull(element.$$('paper-icon-button[title="Toggle Blur Images"]'));
+          assert.isNull(element.$$('icon-button.checkbox'));
           assert.isNull(element.$$('dropdown-menu[label="Interval"]'));
           assert.isNull(element.$$('paper-input[label="Enter Email Address"]'));
-          assert.isNull(element.$$('paper-icon-button[title="Save Email Address"]'));
+          assert.isNull(element.$$('icon-button[icon="fa:floppy-o"]'));
           var cases = Polymer.dom(element.root).querySelectorAll('.case-item');
           assert.equal(cases.length, 0);
           var caseDataList = Polymer.dom(element.root).querySelectorAll('.case-data-item');
@@ -186,7 +193,11 @@ limitations under the License.
         element.enableEmailAddress = true;
         flush(function() {
           assert.isNotNull(element.$$('paper-input[label="Enter Email Address"]'));
-          assert.isNotNull(element.$$('paper-icon-button[title="Save Email Address"]'));
+          assert.isNotNull(element.$$('icon-button[icon="fa:floppy-o"]'));
+          assert.equal(element.$$('icon-button[icon="fa:floppy-o"]').titleTooltip, 'Save Email Address');
+          assert.isFalse(element.$$('icon-button[icon="fa:floppy-o"]').active);
+          assert.isTrue(element.$$('icon-button[icon="fa:floppy-o"]').bigger);
+          assert.isTrue(element.$$('icon-button[icon="fa:floppy-o"]').padded);
           done();
         });
       });
@@ -209,7 +220,7 @@ limitations under the License.
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
-          assert.isFalse(element.$$('paper-icon-button[icon="fa:search"]').disabled);
+          assert.isFalse(element.$$('icon-button[icon="fa:search"]').disabled);
           done();
         });
       });
@@ -232,7 +243,7 @@ limitations under the License.
           var displays = Polymer.dom(element.root).querySelectorAll('terms-display');
           assert.equal(displays.length, 1);
           assert.isNotNull(displays[0]);
-          assert.isTrue(element.$$('paper-icon-button[icon="fa:search"]').disabled);
+          assert.isTrue(element.$$('icon-button[icon="fa:search"]').disabled);
           done();
         });
       });
@@ -241,7 +252,7 @@ limitations under the License.
         element.emailAddress = 'abc';
         element.enableEmailAddress = true;
         flush(function() {
-          assert.isTrue(element.$$('paper-icon-button[title="Save Email Address"]').disabled);
+          assert.isTrue(element.$$('icon-button[icon="fa:floppy-o"]').disabled);
           done();
         });
       });
@@ -250,7 +261,7 @@ limitations under the License.
         element.emailAddress = 'abc@xyz.com';
         element.enableEmailAddress = true;
         flush(function() {
-          assert.isFalse(element.$$('paper-icon-button[title="Save Email Address"]').disabled);
+          assert.isFalse(element.$$('icon-button[icon="fa:floppy-o"]').disabled);
           done();
         });
       });
@@ -445,11 +456,11 @@ limitations under the License.
         assert.equal(element._getNotificationButtonIcon('daily', true), 'social:notifications-active');
       });
 
-      test('_getNotificationButtonStyleClass does return as expected', function() {
-        assert.equal(element._getNotificationButtonStyleClass('never', false), '');
-        assert.equal(element._getNotificationButtonStyleClass('daily', false), '');
-        assert.equal(element._getNotificationButtonStyleClass('never', true), '');
-        assert.equal(element._getNotificationButtonStyleClass('daily', true), 'active');
+      test('_getNotificationButtonIsActive does return as expected', function() {
+        assert.isFalse(element._getNotificationButtonIsActive('never', false));
+        assert.isFalse(element._getNotificationButtonIsActive('daily', false));
+        assert.isFalse(element._getNotificationButtonIsActive('never', true));
+        assert.isTrue(element._getNotificationButtonIsActive('daily', true));
       });
 
       test('_getNotificationButtonText does return as expected', function() {
@@ -881,7 +892,8 @@ limitations under the License.
           model: {
             caseIndex: 0
           },
-          path: [{}]
+          path: [{}],
+          srcElement: {}
         });
 
         assert.deepEqual(element._collapsedCases, [0]);
@@ -890,7 +902,8 @@ limitations under the License.
           model: {
             caseIndex: 1
           },
-          path: [{}]
+          path: [{}],
+          srcElement: {}
         });
 
         assert.deepEqual(element._collapsedCases, [0, 1]);
@@ -903,7 +916,8 @@ limitations under the License.
           },
           path: [{
             localName: 'iron-icon'
-          }]
+          }],
+          srcElement: {}
         });
 
         assert.deepEqual(element._collapsedCases, []);
@@ -914,7 +928,8 @@ limitations under the License.
           },
           path: [{
             localName: 'paper-icon-button'
-          }]
+          }],
+          srcElement: {}
         });
 
         assert.deepEqual(element._collapsedCases, []);
@@ -927,7 +942,8 @@ limitations under the License.
           model: {
             caseIndex: 0
           },
-          path: [{}]
+          path: [{}],
+          srcElement: {}
         });
 
         assert.deepEqual(element._collapsedCases, [1]);
@@ -936,7 +952,8 @@ limitations under the License.
           model: {
             caseIndex: 1
           },
-          path: [{}]
+          path: [{}],
+          srcElement: {}
         });
 
         assert.deepEqual(element._collapsedCases, []);
@@ -951,7 +968,8 @@ limitations under the License.
           },
           path: [{
             localName: 'iron-icon'
-          }]
+          }],
+          srcElement: {}
         });
 
         assert.deepEqual(element._collapsedCases, [0]);
@@ -962,7 +980,8 @@ limitations under the License.
           },
           path: [{
             localName: 'paper-icon-button'
-          }]
+          }],
+          srcElement: {}
         });
 
         assert.deepEqual(element._collapsedCases, [0]);

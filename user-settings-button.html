@@ -15,8 +15,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../fontawesome-iconset/fa-all.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../icon-button/icon-button.html">
 
 <!--
 A Polymer Element showing the button for the user-settings-dialog.
@@ -38,28 +37,22 @@ A Polymer Element showing the button for the user-settings-dialog.
         @apply --layout-horizontal;
       }
 
-      paper-icon-button {
-        border-radius: 50%;
-        height: 30px;
-        width: 30px;
-        min-width: 30px;
+      icon-button {
         margin-left: 10px;
-        margin-right: 0;
-        padding: 0;
-      }
-
-      .highlight-foreground {
-        color: greenyellow;
+        --icon-button-color: white;
+        --icon-button-active-color: greenyellow;
+        --icon-button-hovering-color: greenyellow;
       }
     </style>
 
-    <paper-icon-button
+    <icon-button
       id="settingsButton"
-      class$="[[_getSettingsButtonStyleClass(notifications)]]"
+      active="[[notifications]]"
+      bigger
       icon="fa:cog"
-      title$="[[_getSettingsButtonText(notifications)]]"
+      title-tooltip="[[_getSettingsButtonText(notifications)]]"
       on-tap="_openSettingsDialog">
-    </paper-icon-button>
+    </icon-button>
   </template>
 
   <script>
@@ -93,17 +86,6 @@ A Polymer Element showing the button for the user-settings-dialog.
         openCallback: {
           type: Object
         }
-      },
-
-      /**
-       * Returns the style class for the settings button with the given settings.
-       *
-       * @param {Boolean} notifications
-       * @return {String}
-       * @private
-       */
-      _getSettingsButtonStyleClass: function(notifications) {
-        return notifications ? 'highlight-foreground' : '';
       },
 
       /**
