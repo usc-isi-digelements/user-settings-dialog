@@ -1257,7 +1257,7 @@ var dataConfig = {
        * @private
        */
       _toggleCase: function(event) {
-        if(event.srcElement.localName !== 'modal-icon' && (event.path[0].localName === 'paper-icon-button' || event.path[0].localName === 'iron-icon')) {
+        if(event.target.localName !== 'modal-icon' && (event.path[0].localName === 'paper-icon-button' || event.path[0].localName === 'iron-icon')) {
           return;
         }
 
