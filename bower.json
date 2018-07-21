@@ -9,23 +9,23 @@
     "polymer"
   ],
   "main": "user-settings-dialog.html",
-  "homepage": "https://github.com/DigElements/user-settings-dialog/",
+  "homepage": "https://github.com/usc-isi-digelements/user-settings-dialog/",
   "ignore": [
     "/.*",
     "/test/"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#2.5.0",
-    "button-action": "DigElements/button-action#2.0.4",
-    "dropdown-menu": "DigElements/dropdown-menu#2.0.1",
-    "icon-button": "DigElements/icon-button#2.0.1",
+    "button-action": "usc-isi-digelements/button-action#2.0.4",
+    "dropdown-menu": "usc-isi-digelements/dropdown-menu#2.0.1",
+    "icon-button": "usc-isi-digelements/icon-button#2.0.1",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^2.0.0",
     "moment-element": "uxland/moment-element#^1.1.3",
     "paper-input": "PolymerElements/paper-input#^2.0.0",
     "paper-styles": "PolymerElements/paper-styles#^2.0.0",
-    "styled-dialog": "DigElements/styled-dialog#2.2.0",
-    "stylized-icon": "DigElements/stylized-icon#2.0.0",
-    "terms-display": "DigElements/terms-display#2.1.7"
+    "styled-dialog": "usc-isi-digelements/styled-dialog#2.2.0",
+    "stylized-icon": "usc-isi-digelements/stylized-icon#2.0.0",
+    "terms-display": "usc-isi-digelements/terms-display#2.1.7"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^2.0.0",
